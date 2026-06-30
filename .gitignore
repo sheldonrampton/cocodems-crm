@@ -1,0 +1,120 @@
+# CoCoDems CRM — see docs/architecture.md (Repository Strategy)
+
+# --- Secrets and environment ---
+
+.env
+.env.*
+!.env.example
+
+*.pem
+*.key
+!*.key.example
+credentials.json
+secrets/
+
+# --- Local backups and database dumps ---
+
+backups/
+*.sql
+*.sql.gz
+*.sql.bz2
+*.dump
+
+# --- WordPress core (track custom wp-content only) ---
+
+wordpress/wp-admin/
+wordpress/wp-includes/
+wordpress/index.php
+wordpress/wp-*.php
+wordpress/xmlrpc.php
+wordpress/license.txt
+wordpress/readme.html
+
+# WordPress config contains database credentials
+wordpress/wp-config.php
+wordpress/wp-config-local.php
+
+# Third-party and generated wp-content (keep cocodems-* paths)
+wordpress/wp-content/index.php
+wordpress/wp-content/uploads/
+wordpress/wp-content/upgrade/
+wordpress/wp-content/cache/
+wordpress/wp-content/backup*/
+wordpress/wp-content/backups/
+wordpress/wp-content/debug.log
+wordpress/wp-content/advanced-cache.php
+wordpress/wp-content/object-cache.php
+wordpress/wp-content/db.php
+
+wordpress/wp-content/plugins/*
+!wordpress/wp-content/plugins/cocodems-custom/
+!wordpress/wp-content/plugins/cocodems-custom/**
+
+wordpress/wp-content/themes/*
+!wordpress/wp-content/themes/cocodems-theme/
+!wordpress/wp-content/themes/cocodems-theme/**
+
+# CiviCRM core is installed as a plugin; do not track
+wordpress/wp-content/plugins/civicrm/
+
+# --- PHP / Composer ---
+
+vendor/
+composer.phar
+
+# --- JavaScript / Node ---
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build output from @wordpress/scripts and similar tooling
+build/
+dist/
+
+# --- Terraform ---
+
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Local Terraform overrides (may contain secrets)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+.terraformrc
+terraform.rc
+
+# --- Docker (local runtime data) ---
+
+docker/data/
+docker/volumes/
+
+# --- Tests and tooling ---
+
+coverage/
+.phpunit.result.cache
+.phpcs-cache
+
+# --- Logs ---
+
+*.log
+
+# --- OS and editor ---
+
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
