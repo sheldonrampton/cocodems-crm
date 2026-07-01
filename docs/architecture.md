@@ -266,7 +266,22 @@ Future synchronization may be desirable.
 
 # Deployment Architecture
 
-Two environments are maintained.
+Three environments are maintained.
+
+## Local
+
+Purpose:
+
+* local development environment
+* quick development at testing before committing to Github
+
+Characteristics:
+
+* fake email delivery
+* non-production data
+* Docker Compose brings up WordPress, CiviCRM, MariaDB, and Nginx with one command
+
+---
 
 ## Staging
 
@@ -290,7 +305,7 @@ Characteristics:
 
 Purpose:
 
-Serve the live Columbia County Democrats website.
+Serve the live Columbia County Democrats CRM and website.
 
 Characteristics:
 
