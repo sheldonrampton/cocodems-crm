@@ -1,0 +1,71 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: cocodems-nginx
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      - wordpress_data:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      php:
+        condition: service_started
+    restart: unless-stopped
+
+  php:
+    build:
+      context: ./docker/php
+      args:
+        CIVICRM_VERSION: ${CIVICRM_VERSION:-6.0.3}
+        WORDPRESS_VERSION: ${WORDPRESS_VERSION:-}
+    container_name: cocodems-php
+    volumes:
+      - wordpress_data:/var/www/html
+      - private_config:/var/www/private
+      - ./wordpress/wp-content/plugins/cocodems-custom:/var/www/html/wp-content/plugins/cocodems-custom
+      - ./wordpress/wp-content/themes/cocodems-theme:/var/www/html/wp-content/themes/cocodems-theme
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_PORT: 3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-cocodems}
+      WORDPRESS_DB_USER: ${MYSQL_USER:-cocodems}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      CIVICRM_DB_HOST: mariadb
+      CIVICRM_DB_PORT: 3306
+      CIVICRM_DB_NAME: ${MYSQL_DATABASE:-cocodems}
+      CIVICRM_DB_USER: ${MYSQL_USER:-cocodems}
+      CIVICRM_DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      CIVICRM_UF_BASEURL: ${CIVICRM_UF_BASEURL:-http://localhost:8080}
+      WORDPRESS_CONFIG_FILE: /var/www/private/wp-config.php
+      WORDPRESS_SITE_TITLE: ${WORDPRESS_SITE_TITLE:-CoCoDems CRM}
+      CIVICRM_ADMIN_USER: ${CIVICRM_ADMIN_USER:-admin}
+      CIVICRM_ADMIN_PASS: ${CIVICRM_ADMIN_PASS:?CIVICRM_ADMIN_PASS is required}
+      CIVICRM_ADMIN_EMAIL: ${CIVICRM_ADMIN_EMAIL:-admin@example.com}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: cocodems-mariadb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./docker/mariadb/conf.d/custom.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-cocodems}
+      MYSQL_USER: ${MYSQL_USER:-cocodems}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  wordpress_data:
+  private_config:
+  mariadb_data:

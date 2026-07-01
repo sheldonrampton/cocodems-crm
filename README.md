@@ -2,6 +2,17 @@
 
 This project aims to build an open-source CRM platform for county Democratic parties using WordPress and CiviCRM. Columbia County Democrats (Columbia County, Wisconsin) will serve as the prototype. The long-term goal is a reusable platform that integrates volunteer management, email, donations, events, and websites while interoperating with NGP VAN and Action Network.
 
+# Getting started
+
+## Local development
+
+```bash
+cp .env.example .env   # set passwords in .env
+docker compose --project-directory . -f docker/docker-compose.yml up --build
+```
+
+Open http://localhost:8080 when startup completes. WordPress and CiviCRM are installed automatically on first boot. See [docker/README.md](docker/README.md) for details.
+
 # Repository Structure
 
 ```text
@@ -19,7 +30,7 @@ cocodems-crm/
 │   ├── data-model.md              # CRM entities and relationships
 │   ├── deployment.md              # Deployment procedures
 │   ├── coding-standards.md        # Coding conventions
-│   └── decision-log.md            # Architecture Decision Records (ADRs)
+│   └── adr/                       # Architecture Decision Records (ADRs)
 │
 ├── infra/                         # Infrastructure as Code
 │   └── terraform/

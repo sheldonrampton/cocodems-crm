@@ -1,0 +1,17 @@
+/*
+Theme Name: CoCoDems Theme
+Theme URI: https://github.com/cocodems/cocodems-crm
+Author: Columbia County Democrats
+Description: Minimal theme for the CoCoDems CRM development environment.
+Version: 0.1.0
+Requires at least: 6.0
+Requires PHP: 8.1
+License: GPL-2.0-or-later
+Text Domain: cocodems-theme
+*/
+
+body {
+	font-family: system-ui, sans-serif;
+	line-height: 1.5;
+	margin: 2rem;
+}
