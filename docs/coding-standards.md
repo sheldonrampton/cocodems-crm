@@ -4,7 +4,7 @@
 
 These conventions apply to all code in the CoCoDems CRM repository. They reflect the guiding principles in [architecture.md](architecture.md): prefer configuration over custom code, keep custom code isolated, and optimize for volunteer maintainability and AI-assisted development.
 
-When a standard conflicts with an upstream framework convention (WordPress, CiviCRM, Terraform), follow the upstream convention unless there is a documented reason not to (record exceptions in [decision-log.md](decision-log.md)).
+When a standard conflicts with an upstream framework convention (WordPress, CiviCRM, Terraform), follow the upstream convention unless there is a documented reason not to (record exceptions in [docs/adr/](adr/)).
 
 ---
 
@@ -211,7 +211,7 @@ Documentation lives in `docs/` and inline where code is non-obvious.
 
 * Use sentence case for headings (`## Contact types`, not `## Contact Types`).
 * Keep [vision.md](vision.md) and [architecture.md](architecture.md) as the source of truth for *why*; this file covers *how* to write code.
-* Record significant decisions in [decision-log.md](decision-log.md) using ADR format (context, decision, consequences).
+* Record significant decisions in [docs/adr/](adr/) using ADR format (context, decision, consequences). See [adr/README.md](adr/README.md) for the template.
 * Update [data-model.md](data-model.md) when adding custom fields, relationship types, or new entity mappings.
 * Update [roadmap.md](roadmap.md) when milestones are completed or reprioritized.
 

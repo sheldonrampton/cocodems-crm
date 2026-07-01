@@ -1,4 +1,4 @@
-# ADR-0003: Use WordPress + CiviCRM Instead of Squarespace
+# ADR-0002: Use WordPress + CiviCRM Instead of Squarespace
 
 **Status:** Accepted
 

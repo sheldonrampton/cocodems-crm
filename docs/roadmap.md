@@ -1,10 +1,12 @@
 # Roadmap
 
-**Version:** 0.1 (Draft)
+**Version:** 0.2 (Draft)
 
 This document outlines prioritized milestones from the initial prototype through a production-ready platform. Milestones are ordered by dependency and value — later items assume earlier ones are substantially complete.
 
 The roadmap follows the balanced approach described in [vision.md](vision.md): build the CRM in parallel with existing Democratic Party tools (NGP VAN, Action Network, Mobilize) rather than attempting a disruptive all-at-once migration.
+
+Staging is deployed early (Phase 1) so the Communications Committee can review a working demo before being asked to provide spreadsheets and other records for import in later phases.
 
 ---
 
@@ -22,25 +24,40 @@ The roadmap follows the balanced approach described in [vision.md](vision.md): b
 
 ---
 
-# Phase 1 — Prototype CRM
+# Phase 1 — Staging Environment
 
-**Goal:** Demonstrate a working WordPress + CiviCRM installation with Columbia County–specific contact types and workflows.
+**Goal:** Deploy a password-protected staging site for testing, demonstrations, and pull-request validation — including demos for the CoCoDems Communications Committee before real data is imported.
 
 | Priority | Milestone | Success criteria |
 |----------|-----------|------------------|
-| P0 | WordPress + CiviCRM installation | Clean install on local Docker; admin login works |
+| P0 | Terraform baseline | Staging environment defined in `infra/terraform/environments/staging` |
+| P0 | Staging deployment | WordPress + CiviCRM running on staging; automated deploy from `main` or a staging branch |
+| P0 | Staging access | Password-protected; committee members can log in and browse CiviCRM |
+| P0 | Staging data policy | Non-production data only; fake email delivery; no real API keys |
+| P1 | CI pipeline | GitHub Actions run linting and basic tests on every pull request |
+| P1 | Database backup/restore | `backup-db.sh` and `restore-db.sh` tested against staging |
+| P2 | Production-to-staging sync | `sync-production-to-staging.sh` refreshes staging with sanitized production data (when production exists) |
+
+---
+
+# Phase 2 — Preliminary Data Import
+
+**Goal:** Configure CiviCRM for Columbia County and load representative sample data on staging to validate the data model — before requesting spreadsheets and other records from committee members.
+
+| Priority | Milestone | Success criteria |
+|----------|-----------|------------------|
 | P0 | Contact types configured | Individual, Organization, and Household contact types enabled per [data-model.md](data-model.md) |
 | P0 | Custom fields and tags | Fields for volunteer interests, committee roles, media beats, and elected-office metadata |
-| P1 | Sample data | Representative test contacts, households, organizations, and events loaded |
+| P1 | Sample data | Representative test contacts, households, organizations, and events loaded (not committee source data) |
 | P1 | Basic reports | At least three CiviCRM reports replace common spreadsheet views (volunteer list, donor list, media contacts) |
 | P1 | Custom plugin scaffold | `cocodems-custom` plugin registered with autoloading and a health-check admin page |
 | P2 | Theme integration | Child theme displays public pages; no CRM business logic in the theme |
 
 ---
 
-# Phase 2 — Data Consolidation
+# Phase 3 — Data Consolidation
 
-**Goal:** Replace disconnected spreadsheets with structured CRM records while keeping external systems authoritative where appropriate.
+**Goal:** Import real committee and organizational records — replacing disconnected spreadsheets with structured CRM data while keeping external systems authoritative where appropriate.
 
 | Priority | Milestone | Success criteria |
 |----------|-----------|------------------|
@@ -52,21 +69,6 @@ The roadmap follows the balanced approach described in [vision.md](vision.md): b
 | P1 | Media and elected-official contacts | Separate contact subtypes or tags applied; relationships to organizations recorded |
 | P2 | Newsletter subscribers | Subscriber list imported; email consent and opt-out status preserved |
 | P2 | Household grouping | Related individuals linked via CiviCRM households and relationships |
-
----
-
-# Phase 3 — Staging Environment
-
-**Goal:** Deploy a password-protected staging site for testing, demos, and pull-request validation.
-
-| Priority | Milestone | Success criteria |
-|----------|-----------|------------------|
-| P0 | Terraform baseline | Staging environment defined in `infra/terraform/environments/staging` |
-| P0 | Staging deployment | Automated deploy from `main` or a staging branch |
-| P0 | Staging data policy | Non-production data only; fake email delivery; no real API keys |
-| P1 | CI pipeline | GitHub Actions run linting and basic tests on every pull request |
-| P1 | Database backup/restore | `backup-db.sh` and `restore-db.sh` tested against staging |
-| P2 | Production-to-staging sync | `sync-production-to-staging.sh` refreshes staging with sanitized production data |
 
 ---
 
@@ -142,23 +144,26 @@ Each county deployment should remain independent — separate database, website,
 Phase 0 (Foundation)
     │
     ▼
-Phase 1 (Prototype CRM)
+Phase 1 (Staging Environment)
     │
-    ├──► Phase 2 (Data Consolidation)
+    ▼
+Phase 2 (Preliminary Data Import)
+    │
+    ▼
+Phase 3 (Data Consolidation)
+    │
+    ▼
+Phase 4 (Custom Workflows)
+    │
+    ├──► Phase 5 (Integrations)
     │         │
-    │         ▼
-    └──► Phase 3 (Staging) ──► Phase 4 (Custom Workflows)
-                  │                    │
-                  │                    ▼
-                  │            Phase 5 (Integrations)
-                  │                    │
-                  └────────────────────┼──► Phase 6 (Production)
-                                       │
-                                       ▼
-                               Phase 7 (Platform Readiness)
+    └─────────┼──► Phase 6 (Production)
+              │         │
+              │         ▼
+              └──► Phase 7 (Platform Readiness)
 ```
 
-Phases 2 and 3 can proceed in parallel once Phase 1 is stable. Integration work (Phase 5) should not block production launch for core CRM features, but should be planned before retiring external list-management tools.
+Phase 2 validates the CRM configuration and data model on staging using sample data. Phase 3 imports real committee records once the Communications Committee has seen a demo and agreed to provide source files. Integration work (Phase 5) should not block production launch for core CRM features, but should be planned before retiring external list-management tools.
 
 ---
 

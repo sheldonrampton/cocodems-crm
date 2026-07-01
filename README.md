@@ -11,28 +11,34 @@ cp .env.example .env   # set passwords in .env
 docker compose --project-directory . -f docker/docker-compose.yml up --build
 ```
 
-Open http://localhost:8080 when startup completes. WordPress and CiviCRM are installed automatically on first boot. See [docker/README.md](docker/README.md) for details.
+Open http://localhost:8080 when startup completes. WordPress and CiviCRM are installed automatically on first boot.
+
+Log in at **http://localhost:8080/wp-login.php** using `CIVICRM_ADMIN_USER` and `CIVICRM_ADMIN_PASS` from your `.env` file (defaults: `admin` / `change-me`).
+
+See [docker/README.md](docker/README.md) for details, troubleshooting, and common commands.
 
 # Repository Structure
+
+The tree below shows the target layout. Directories and files marked **(planned)** are not in the repository yet. See [roadmap.md](docs/roadmap.md) for when each is expected.
 
 ```text
 cocodems-crm/
 │
 ├── README.md                      # Project overview and getting started
-├── LICENSE                        # Open-source license (TBD)
+├── LICENSE                        # (planned) Open-source license
 ├── .gitignore
 ├── .env.example                   # Sample environment variables
 │
 ├── docs/                          # Project documentation
-│   ├── vision.md                  # Project goals and guiding principles
-│   ├── architecture.md            # System architecture
-│   ├── roadmap.md                 # Development roadmap and milestones
-│   ├── data-model.md              # CRM entities and relationships
-│   ├── deployment.md              # Deployment procedures
-│   ├── coding-standards.md        # Coding conventions
+│   ├── vision.md
+│   ├── architecture.md
+│   ├── roadmap.md
+│   ├── data-model.md
+│   ├── deployment.md              # (planned) Deployment procedures
+│   ├── coding-standards.md
 │   └── adr/                       # Architecture Decision Records (ADRs)
 │
-├── infra/                         # Infrastructure as Code
+├── infra/                         # (planned) Infrastructure as Code
 │   └── terraform/
 │       ├── environments/
 │       │   ├── staging/
@@ -46,7 +52,7 @@ cocodems-crm/
 │   ├── php/
 │   └── mariadb/
 │
-├── wordpress/                     # WordPress-related code
+├── wordpress/                     # Custom WordPress code (core installed by Docker)
 │   ├── wp-content/
 │   │   ├── themes/
 │   │   │   └── cocodems-theme/
@@ -54,22 +60,22 @@ cocodems-crm/
 │   │   ├── plugins/
 │   │   │   └── cocodems-custom/
 │   │   │
-│   │   └── mu-plugins/
+│   │   └── mu-plugins/            # (planned)
 │   │
 │   └── README.md
 │
-├── scripts/                       # Utility scripts
+├── scripts/                       # (planned) Utility scripts
 │   ├── backup-db.sh
 │   ├── restore-db.sh
 │   ├── deploy-staging.sh
 │   ├── deploy-production.sh
 │   └── sync-production-to-staging.sh
 │
-├── backups/                       # Optional local backup storage (ignored by Git)
+├── backups/                       # (planned) Local backup storage (gitignored)
 │
-├── tests/                         # Automated tests
+├── tests/                         # (planned) Automated tests
 │
-└── .github/
+└── .github/                       # (planned) CI/CD and GitHub templates
     ├── workflows/
     │   ├── ci.yml
     │   ├── deploy-staging.yml
