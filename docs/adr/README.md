@@ -17,6 +17,7 @@ ADRs are **immutable once accepted**. If a decision is reversed or superseded, a
 | [0003](0003-use-terraform.md) | Use Terraform for infrastructure as code | Accepted | 2026-06-29 |
 | [0004](0004-aws-ec2.md) | Use AWS EC2 for cloud hosting | Accepted | 2026-06-29 |
 | [0005](0005-one-county-one-instance.md) | One county, one instance | Accepted | 2026-06-29 |
+| [0006](0006-external-dns.md) | Do not manage DNS with Terraform or AWS | Accepted | 2026-07-03 |
 
 ---
 

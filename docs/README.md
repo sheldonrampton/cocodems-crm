@@ -8,6 +8,7 @@ Start here for project context, then work through the docs below in order.
 | [architecture.md](architecture.md) | System design, guiding principles, deployment model |
 | [data-model.md](data-model.md) | CiviCRM entities, relationships, and CoCoDems-specific modeling |
 | [roadmap.md](roadmap.md) | Phased milestones from foundation through production |
+| [dns.md](dns.md) | DNS configuration for staging and production |
 | [adr/](adr/) | Architecture Decision Records — why key technical choices were made |
 | [docker/README.md](../docker/README.md) | Local development environment setup and troubleshooting |
 
