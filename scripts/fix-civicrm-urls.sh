@@ -37,7 +37,6 @@ RESOURCE_URL="${BASE_URL}wp-content/plugins/civicrm/civicrm/"
 FILES_URL="${BASE_URL}wp-content/uploads/civicrm/"
 IMAGE_UPLOAD_URL="${FILES_URL}persist/contribute/"
 EXTENSIONS_URL="${FILES_URL}ext/"
-CUSTOM_CSS_URL="${FILES_URL}css/"
 
 if [[ -f "${REPO_ROOT}/docker/docker-compose.staging.yml" ]]; then
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.staging.yml"
@@ -93,7 +92,7 @@ if (str_contains(\$content, \$marker)) {
   . \"\\\$civicrm_setting['domain']['userFrameworkResourceURL'] = '${RESOURCE_URL}';\\n\"
   . \"\\\$civicrm_setting['domain']['imageUploadURL'] = '${IMAGE_UPLOAD_URL}';\\n\"
   . \"\\\$civicrm_setting['domain']['extensionsURL'] = '${EXTENSIONS_URL}';\\n\"
-  . \"\\\$civicrm_setting['domain']['customCSSURL'] = '${CUSTOM_CSS_URL}';\\n\";
+  . \"unset(\\\$civicrm_setting['domain']['customCSSURL']);\\n\";
 file_put_contents(\$file, rtrim(\$content) . \"\\n\\n\" . \$block . \"\\n\");
 "
 

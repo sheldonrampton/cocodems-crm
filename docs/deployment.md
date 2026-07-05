@@ -177,7 +177,7 @@ bash scripts/fix-civicrm-urls.sh
 bash scripts/diagnose-civicrm-urls.sh   # verify runtime URLs
 ```
 
-`imageUploadURL` should end with `/wp-content/uploads/civicrm/persist/contribute/`. Then hard-refresh CiviCRM (Cmd+Shift+R) and visit the menu rebuild URL if needed:
+`imageUploadURL` should end with `/wp-content/uploads/civicrm/persist/contribute/`. Leave **Custom CSS URL** blank (our fix script clears it). Then hard-refresh CiviCRM (Cmd+Shift+R) and visit the menu rebuild URL if needed:
 
 ```
 https://your-domain/wp-admin/admin.php?page=CiviCRM&q=civicrm/menu/rebuild&reset=1
