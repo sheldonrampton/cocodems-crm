@@ -15,7 +15,7 @@ Start the stack from the repository root:
 
 ```bash
 cp .env.example .env   # edit passwords first
-docker compose --project-directory . -f docker/docker-compose.yml up --build
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up --build
 ```
 
 The custom plugin and theme directories are bind-mounted into the running container. Changes on the host appear immediately after a page refresh.

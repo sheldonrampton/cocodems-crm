@@ -159,16 +159,22 @@ Instance needs the IAM profile from Terraform and SSM agent (pre-installed on Ub
 
 **`address already in use` on `127.0.0.1:8080`**
 
-A previous deploy left the Docker Nginx container (or another process) bound to port 8080. On the server:
+Docker Compose **merges** `ports` from both compose files. If `docker-compose.yml` and `docker-compose.staging.yml` each publish port 8080, the second bind fails even when no other process is using the port. The fix is to keep host port publishing only in `docker-compose.staging.yml` (and `docker-compose.local.yml` for local dev).
+
+After pulling the latest code:
 
 ```bash
 cd /opt/cocodems-crm
 docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.staging.yml down
-sudo ss -tlnp | grep 8080   # should show nothing
 sudo -u ubuntu bash scripts/deploy-staging.sh
 ```
 
-If port 8080 is still taken, remove any orphan container: `docker rm -f cocodems-nginx`
+Verify the merged config shows a **single** port mapping:
+
+```bash
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.staging.yml config | grep -A2 'nginx:' | grep ports -A2
+# Expected: only "127.0.0.1:8080:80"
+```
 
 ---
 

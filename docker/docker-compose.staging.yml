@@ -1,5 +1,8 @@
 # Staging override: bind Docker Nginx to localhost only.
 # Public HTTP/HTTPS is handled by host Nginx (see scripts/deploy-staging.sh).
+#
+# Port publishing lives here (not in docker-compose.yml) so Compose merge does not
+# append duplicate 8080 bindings when both files are used together.
 
 services:
   nginx:

@@ -1,0 +1,7 @@
+# Local development: publish Nginx on the host (see HTTP_PORT in .env).
+# Not used on staging — see docker-compose.staging.yml.
+
+services:
+  nginx:
+    ports:
+      - "${HTTP_PORT:-8080}:80"

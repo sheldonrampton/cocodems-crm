@@ -8,7 +8,7 @@ This project aims to build an open-source CRM platform for county Democratic par
 
 ```bash
 cp .env.example .env   # set passwords in .env
-docker compose --project-directory . -f docker/docker-compose.yml up --build
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up --build
 ```
 
 Open http://localhost:8080 when startup completes. WordPress and CiviCRM are installed automatically on first boot.

@@ -22,7 +22,7 @@ Edit `.env` and set secure values for `MYSQL_ROOT_PASSWORD`, `MYSQL_PASSWORD`, a
 Start the stack:
 
 ```bash
-docker compose --project-directory . -f docker/docker-compose.yml up --build
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up --build
 ```
 
 First boot downloads WordPress and CiviCRM into the image, waits for MariaDB, and runs the installer. This can take several minutes.
@@ -44,22 +44,22 @@ Prefer **http://localhost:8080/wp-login.php** over `/wp-admin` — it avoids red
 
 ```bash
 # Start in the background
-docker compose --project-directory . -f docker/docker-compose.yml up -d --build
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up -d --build
 
 # Follow logs
-docker compose --project-directory . -f docker/docker-compose.yml logs -f
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml logs -f
 
 # Stop containers (keep data)
-docker compose --project-directory . -f docker/docker-compose.yml down
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml down
 
 # Stop and remove database + WordPress volumes (fresh install)
-docker compose --project-directory . -f docker/docker-compose.yml down -v
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml down -v
 
 # WP-CLI
-docker compose --project-directory . -f docker/docker-compose.yml exec php wp plugin list --allow-root --path=/var/www/html
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml exec php wp plugin list --allow-root --path=/var/www/html
 
 # CiviCRM CLI (run as www-data)
-docker compose --project-directory . -f docker/docker-compose.yml exec -u www-data php cv api4 Contact.get -limit 5
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml exec -u www-data php cv api4 Contact.get -limit 5
 ```
 
 ## Services
@@ -92,9 +92,9 @@ Compose reads `.env` from the repository root. Always pass `--project-directory 
 * update URLs manually:
 
 ```bash
-docker compose --project-directory . -f docker/docker-compose.yml exec php \
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml exec php \
   wp option update home 'http://localhost:NEW_PORT' --path=/var/www/html --allow-root
-docker compose --project-directory . -f docker/docker-compose.yml exec php \
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml exec php \
   wp option update siteurl 'http://localhost:NEW_PORT' --path=/var/www/html --allow-root
 ```
 
@@ -107,7 +107,7 @@ Use **http://localhost:8080/wp-login.php** instead. If your browser cached the b
 Rebuild/restart Nginx after pulling the latest config if the problem persists:
 
 ```bash
-docker compose --project-directory . -f docker/docker-compose.yml restart nginx
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml restart nginx
 ```
 
 **MariaDB “not ready yet” loop (attempt N/60…)**
@@ -115,13 +115,13 @@ docker compose --project-directory . -f docker/docker-compose.yml restart nginx
 On older PHP images, the MariaDB client required SSL by default while the local MariaDB container does not support it. Pull the latest code and rebuild:
 
 ```bash
-docker compose --project-directory . -f docker/docker-compose.yml up --build
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up --build
 ```
 
 If the loop continues after rebuild, wait for the `mariadb` health check to pass, then restart PHP:
 
 ```bash
-docker compose --project-directory . -f docker/docker-compose.yml restart php
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml restart php
 ```
 
 **Installer fails or times out waiting for MariaDB**
@@ -129,14 +129,14 @@ docker compose --project-directory . -f docker/docker-compose.yml restart php
 Wait for the `mariadb` health check to pass, then restart PHP:
 
 ```bash
-docker compose --project-directory . -f docker/docker-compose.yml restart php
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml restart php
 ```
 
 **Fresh reinstall**
 
 ```bash
-docker compose --project-directory . -f docker/docker-compose.yml down -v
-docker compose --project-directory . -f docker/docker-compose.yml up --build
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml down -v
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up --build
 ```
 
 **Port 8080 already in use**
