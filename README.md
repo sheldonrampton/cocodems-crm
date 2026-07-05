@@ -38,11 +38,11 @@ cocodems-crm/
 │   ├── coding-standards.md
 │   └── adr/                       # Architecture Decision Records (ADRs)
 │
-├── infra/                         # (planned) Infrastructure as Code
-│   └── terraform/
+├── infra/                         # Infrastructure as Code
+│   └── terraform/                 # AWS staging (production planned)
 │       ├── environments/
-│       │   ├── staging/
-│       │   └── production/
+│       │   ├── staging/           # Staging environment
+│       │   └── production/        # (planned)
 │       ├── modules/
 │       └── README.md
 │
