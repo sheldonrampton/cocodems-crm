@@ -155,7 +155,20 @@ Run `sudo bash scripts/setup-staging-tls.sh` after DNS points at the instance. P
 
 **Cannot connect via SSM**
 
-Instance needs the IAM profile from Terraform and SSM agent (pre-installed on Ubuntu AMIs). Check security groups allow outbound HTTPS.
+Instance needs the IAM profile from Terraform and SSM agent (pre-installed on Ubuntu AMIs). Check security groups allow outbound HTTPS. Staging is in **us-east-2** — pass `--region us-east-2` if your CLI default region differs.
+
+**`address already in use` on `127.0.0.1:8080`**
+
+A previous deploy left the Docker Nginx container (or another process) bound to port 8080. On the server:
+
+```bash
+cd /opt/cocodems-crm
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.staging.yml down
+sudo ss -tlnp | grep 8080   # should show nothing
+sudo -u ubuntu bash scripts/deploy-staging.sh
+```
+
+If port 8080 is still taken, remove any orphan container: `docker rm -f cocodems-nginx`
 
 ---
 

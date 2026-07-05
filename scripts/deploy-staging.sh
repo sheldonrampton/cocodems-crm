@@ -39,8 +39,25 @@ if [[ -z "${SITE_DOMAIN}" || -z "${CIVICRM_UF_BASEURL}" ]]; then
 	exit 1
 fi
 
+start_stack() {
+	${COMPOSE} up -d --build
+}
+
 echo "==> Building and starting Docker containers..."
-${COMPOSE} up -d --build
+if ! start_stack; then
+	if ss -tln 2>/dev/null | grep -qE '(:8080 |127\.0\.0\.1:8080)'; then
+		echo "==> Port 8080 in use — stopping previous stack and retrying..."
+		${COMPOSE} down --remove-orphans
+		start_stack || {
+			echo "Deploy failed after retry. Inspect the port holder:" >&2
+			echo "  sudo ss -tlnp | grep 8080" >&2
+			echo "  docker ps -a --filter name=cocodems" >&2
+			exit 1
+		}
+	else
+		exit 1
+	fi
+fi
 
 echo "==> Waiting for WordPress install (may take several minutes on first boot)..."
 for i in $(seq 1 60); do
