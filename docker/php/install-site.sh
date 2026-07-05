@@ -29,6 +29,11 @@ sed -i "/\/\* That's all, stop editing! Happy publishing\. \*\//,\$d" "${WORDPRE
 
 cat >> "${WORDPRESS_CONFIG_FILE}" <<EOF
 
+// Honor HTTPS when behind host Nginx / reverse proxy (staging).
+if ( isset( \$_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === \$_SERVER['HTTP_X_FORWARDED_PROTO'] ) {
+	\$_SERVER['HTTPS'] = 'on';
+}
+
 define( 'WP_HOME', '${CIVICRM_UF_BASEURL}' );
 define( 'WP_SITEURL', '${CIVICRM_UF_BASEURL}' );
 EOF

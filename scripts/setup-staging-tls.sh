@@ -50,9 +50,10 @@ echo "==> Updating WordPress URLs..."
 ${COMPOSE} exec -T php wp option update home "${HTTPS_URL}" --path=/var/www/html --allow-root
 ${COMPOSE} exec -T php wp option update siteurl "${HTTPS_URL}" --path=/var/www/html --allow-root
 
-if ${COMPOSE} exec -T php test -f /var/www/private/wp-config.php 2>/dev/null; then
-	${COMPOSE} exec -T php sed -i "s|define( 'WP_HOME'.*|define( 'WP_HOME', '${HTTPS_URL}' );|" /var/www/private/wp-config.php || true
-	${COMPOSE} exec -T php sed -i "s|define( 'WP_SITEURL'.*|define( 'WP_SITEURL', '${HTTPS_URL}' );|" /var/www/private/wp-config.php || true
+WP_CONFIG="/var/www/private/wp-config.php"
+if ${COMPOSE} exec -T php test -f "${WP_CONFIG}" 2>/dev/null; then
+	${COMPOSE} exec -T php sed -i "s|define( 'WP_HOME'.*|define( 'WP_HOME', '${HTTPS_URL}' );|" "${WP_CONFIG}" || true
+	${COMPOSE} exec -T php sed -i "s|define( 'WP_SITEURL'.*|define( 'WP_SITEURL', '${HTTPS_URL}' );|" "${WP_CONFIG}" || true
 fi
 
 echo ""

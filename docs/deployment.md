@@ -153,6 +153,18 @@ Run `sudo bash scripts/setup-staging-tls.sh` after DNS points at the instance. P
 
 `CIVICRM_UF_BASEURL` on the **server** `.env` must match the public `https://` URL. Re-run `setup-staging-tls.sh` or update WordPress `home` and `siteurl` manually.
 
+**`ERR_TOO_MANY_REDIRECTS` on `/wp-login.php` or `/wp-admin`**
+
+WordPress is behind two proxies (host Nginx → Docker Nginx → PHP) and does not detect HTTPS. It redirects to `https://…/wp-login.php` while thinking the request is HTTP, causing an infinite loop. Pull the latest code and restart Docker Nginx:
+
+```bash
+cd /opt/cocodems-crm
+git pull
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.staging.yml restart nginx
+```
+
+If it persists, add the proxy HTTPS block to `/var/www/private/wp-config.php` inside the PHP container (or re-run `sudo bash scripts/setup-staging-tls.sh`).
+
 **Cannot connect via SSM**
 
 Instance needs the IAM profile from Terraform and SSM agent (pre-installed on Ubuntu AMIs). Check security groups allow outbound HTTPS. Staging is in **us-east-2** — pass `--region us-east-2` if your CLI default region differs.
