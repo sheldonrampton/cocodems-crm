@@ -165,6 +165,18 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 
 If it persists, add the proxy HTTPS block to `/var/www/private/wp-config.php` inside the PHP container (or re-run `sudo bash scripts/setup-staging-tls.sh`).
 
+**CiviCRM shows only “CiviCRM Home” / no menus or contact search**
+
+CiviCRM CSS and JavaScript did not load — usually because the site was installed over HTTP and TLS was enabled later. WordPress URLs were updated but CiviCRM resource URLs were not. On the server:
+
+```bash
+cd /opt/cocodems-crm
+# Ensure .env has CIVICRM_UF_BASEURL=https://your-domain (no path suffix)
+bash scripts/fix-civicrm-urls.sh
+```
+
+Then hard-refresh CiviCRM in the browser. Confirm `.env` has `CIVICRM_UF_BASEURL=https://crm-staging.governation.org`.
+
 **Cannot connect via SSM**
 
 Instance needs the IAM profile from Terraform and SSM agent (pre-installed on Ubuntu AMIs). Check security groups allow outbound HTTPS. Staging is in **us-east-2** — pass `--region us-east-2` if your CLI default region differs.

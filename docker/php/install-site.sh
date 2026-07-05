@@ -25,6 +25,9 @@ wp config create \
 	--dbpass="${WORDPRESS_DB_PASSWORD}" \
 	--config-file="${WORDPRESS_CONFIG_FILE}"
 
+BASE_URL="${CIVICRM_UF_BASEURL}"
+[[ "${BASE_URL}" != */ ]] && BASE_URL="${BASE_URL}/"
+
 sed -i "/\/\* That's all, stop editing! Happy publishing\. \*\//,\$d" "${WORDPRESS_CONFIG_FILE}"
 
 cat >> "${WORDPRESS_CONFIG_FILE}" <<EOF
@@ -34,13 +37,13 @@ if ( isset( \$_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === \$_SERVER['HTTP
 	\$_SERVER['HTTPS'] = 'on';
 }
 
-define( 'WP_HOME', '${CIVICRM_UF_BASEURL}' );
-define( 'WP_SITEURL', '${CIVICRM_UF_BASEURL}' );
+define( 'WP_HOME', '${BASE_URL%/}' );
+define( 'WP_SITEURL', '${BASE_URL%/}' );
 EOF
 
 wp core install \
 	--path=/var/www/html \
-	--url="${CIVICRM_UF_BASEURL}" \
+	--url="${BASE_URL%/}" \
 	--title="${WORDPRESS_SITE_TITLE}" \
 	--admin_user="${CIVICRM_ADMIN_USER}" \
 	--admin_password="${CIVICRM_ADMIN_PASS}" \
@@ -60,7 +63,7 @@ cd /var/www/html
 
 cv core:install \
 	--db="mysql://${CIVICRM_DB_USER}:${CIVICRM_DB_PASSWORD}@${CIVICRM_DB_HOST}:${CIVICRM_DB_PORT:-3306}/${CIVICRM_DB_NAME}" \
-	--url="${CIVICRM_UF_BASEURL}" \
+	--url="${BASE_URL}" \
 	-m "extras.adminUser=${CIVICRM_ADMIN_USER}" \
 	-m "extras.adminPass=${CIVICRM_ADMIN_PASS}"
 

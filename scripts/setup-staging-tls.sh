@@ -56,5 +56,8 @@ if ${COMPOSE} exec -T php test -f "${WP_CONFIG}" 2>/dev/null; then
 	${COMPOSE} exec -T php sed -i "s|define( 'WP_SITEURL'.*|define( 'WP_SITEURL', '${HTTPS_URL}' );|" "${WP_CONFIG}" || true
 fi
 
+echo "==> Updating CiviCRM URLs..."
+bash "${REPO_ROOT}/scripts/fix-civicrm-urls.sh"
+
 echo ""
 echo "HTTPS enabled: ${HTTPS_URL}"
