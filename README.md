@@ -34,7 +34,7 @@ cocodems-crm/
 │   ├── architecture.md
 │   ├── roadmap.md
 │   ├── data-model.md
-│   ├── deployment.md              # (planned) Deployment procedures
+│   ├── deployment.md              # Staging deploy runbook
 │   ├── coding-standards.md
 │   └── adr/                       # Architecture Decision Records (ADRs)
 │
@@ -64,12 +64,11 @@ cocodems-crm/
 │   │
 │   └── README.md
 │
-├── scripts/                       # (planned) Utility scripts
-│   ├── backup-db.sh
-│   ├── restore-db.sh
+├── scripts/                       # Deploy and ops scripts
+│   ├── bootstrap-staging-server.sh
 │   ├── deploy-staging.sh
-│   ├── deploy-production.sh
-│   └── sync-production-to-staging.sh
+│   ├── setup-staging-tls.sh
+│   └── setup-staging-auth.sh
 │
 ├── backups/                       # (planned) Local backup storage (gitignored)
 │

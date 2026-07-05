@@ -294,7 +294,8 @@ Purpose:
 
 Characteristics:
 
-* password protected
+* single EC2 instance (no load balancer)
+* TLS via Certbot on the instance
 * fake email delivery
 * non-production data
 * safe for development
@@ -309,6 +310,8 @@ Serve the live Columbia County Democrats CRM and website.
 
 Characteristics:
 
+* single EC2 instance (no load balancer)
+* TLS via Certbot on the instance
 * real users
 * real email
 * production backups

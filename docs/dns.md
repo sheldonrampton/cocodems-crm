@@ -11,13 +11,15 @@ This guide covers the records needed for staging and production deployments on A
 Before configuring DNS you need:
 
 1. **A domain or subdomain** you control (e.g. `crm.columbiademocrats.org`).
-2. **The public IP or hostname** of your EC2 instance or load balancer. Terraform outputs this value after `terraform apply`. You can also find it in the AWS EC2 console under **Public IPv4 address** or **Public IPv4 DNS**.
+2. **The Elastic IP** of your EC2 instance. Terraform outputs this value after `terraform apply` (`terraform output public_ip`). You can also find it in the AWS EC2 console under **Public IPv4 address**.
 
 ---
 
 ## Required DNS records
 
-### Single EC2 instance (typical for staging and early production)
+### Single EC2 instance (staging and production)
+
+Each environment uses one EC2 instance with an Elastic IP — **no Application Load Balancer**.
 
 | Record type | Host / name | Value | TTL |
 |-------------|-------------|-------|-----|
@@ -27,13 +29,7 @@ Use an **Elastic IP** rather than the instance's auto-assigned public IP. An Ela
 
 If your DNS provider does not support A records at the zone apex and you are using the bare domain (e.g. `example.org` rather than a subdomain), check whether your provider offers an **ALIAS** or **ANAME** pseudo-record. Otherwise use a subdomain.
 
-### With an Application Load Balancer (future scaling)
-
-| Record type | Host / name | Value | TTL |
-|-------------|-------------|-------|-----|
-| **CNAME** | `crm.example.org` | ALB DNS name (e.g. `cocodems-alb-123456.us-east-2.elb.amazonaws.com`) | 300 |
-
-CNAME records cannot be placed at the zone apex (`example.org`). If you need the bare domain to point at an ALB, use a provider that supports ALIAS/ANAME records, or use a subdomain.
+Application Load Balancers and ACM are **not** part of the current CoCoDems architecture. A future multi-instance scale-out could add an ALB; see [ADR-0004](adr/0004-aws-ec2.md).
 
 ---
 
@@ -53,34 +49,25 @@ Set `SITE_DOMAIN=crm.example.org` and `CIVICRM_UF_BASEURL=https://crm.example.or
 
 ## TLS / HTTPS
 
-HTTPS requires a TLS certificate. Two common approaches on AWS:
-
-### AWS Certificate Manager (ACM) + Load Balancer
-
-1. Request a certificate in ACM for your domain (e.g. `crm.example.org`).
-2. ACM asks you to create a **CNAME validation record** at your DNS provider:
-
-| Record type | Host / name | Value |
-|-------------|-------------|-------|
-| **CNAME** | `_abc123.crm.example.org` | `_def456.acm-validations.aws.` |
-
-ACM provides the exact name and value. Create this record at your DNS provider and wait for validation (usually a few minutes, sometimes up to 30).
-
-3. Attach the validated certificate to your ALB listener. Terraform handles this; the DNS validation record is the only manual step.
-
-### Let's Encrypt (Certbot) on the EC2 instance
+TLS terminates on the EC2 instance using **Certbot** (Let's Encrypt) on host Nginx. This applies to both staging and production.
 
 1. Point DNS at the instance (A record above).
-2. Wait for propagation (check with `dig crm.example.org`).
+2. Deploy the application and confirm HTTP works.
 3. Run Certbot on the instance:
+
+```bash
+sudo bash scripts/setup-staging-tls.sh
+```
+
+Or manually:
 
 ```bash
 sudo certbot --nginx -d crm.example.org
 ```
 
-Certbot validates via HTTP (port 80 must be open) and installs the certificate automatically. Renewal is handled by a cron job or systemd timer.
+Certbot validates via HTTP (port 80 must be open) and installs the certificate on host Nginx. Renewal is handled automatically.
 
-No extra DNS records are needed for HTTP validation.
+**AWS Certificate Manager (ACM)** certificates cannot be installed on EC2 — they only attach to load balancers, CloudFront, and similar AWS services. Since this project does not use a load balancer, use Certbot rather than ACM for HTTPS.
 
 ---
 
@@ -91,9 +78,6 @@ After creating records, verify propagation before deploying:
 ```bash
 # Check A record
 dig +short crm.example.org A
-
-# Check CNAME record (if using ALB)
-dig +short crm.example.org CNAME
 
 # Full lookup with TTL
 dig crm.example.org

@@ -1,0 +1,7 @@
+# Staging override: bind Docker Nginx to localhost only.
+# Public HTTP/HTTPS is handled by host Nginx (see scripts/deploy-staging.sh).
+
+services:
+  nginx:
+    ports:
+      - "127.0.0.1:8080:80"
