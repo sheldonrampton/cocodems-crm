@@ -17,6 +17,16 @@ Log in at **http://localhost:8080/wp-login.php** using `CIVICRM_ADMIN_USER` and 
 
 See [docker/README.md](docker/README.md) for details, troubleshooting, and common commands.
 
+## Staging deployment
+
+Staging runs on AWS EC2 (Terraform + deploy scripts). See [docs/deployment.md](docs/deployment.md) for the full runbook.
+
+Quick sequence after `terraform apply`:
+
+1. SSM into the instance (`--region us-east-2`)
+2. `bootstrap-staging-server.sh` → copy `.env.staging.example` to `.env` → `deploy-staging.sh`
+3. `setup-staging-tls.sh` (HTTPS + CiviCRM URL sync)
+
 # Repository Structure
 
 The tree below shows the target layout. Directories and files marked **(planned)** are not in the repository yet. See [roadmap.md](docs/roadmap.md) for when each is expected.
@@ -68,7 +78,9 @@ cocodems-crm/
 │   ├── bootstrap-staging-server.sh
 │   ├── deploy-staging.sh
 │   ├── setup-staging-tls.sh
-│   └── setup-staging-auth.sh
+│   ├── setup-staging-auth.sh
+│   ├── fix-civicrm-urls.sh        # After TLS or domain changes
+│   └── diagnose-civicrm-urls.sh
 │
 ├── backups/                       # (planned) Local backup storage (gitignored)
 │

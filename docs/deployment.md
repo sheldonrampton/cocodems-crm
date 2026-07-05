@@ -44,14 +44,17 @@ Staging and production are **separate** EC2 instances (separate Terraform enviro
 * `terraform apply` completed for staging
 * DNS A record: `site_domain` → `terraform output public_ip` (see [dns.md](dns.md))
 * AWS CLI configured locally (for SSM access)
+* [Session Manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html) installed (`brew install --cask session-manager-plugin` on macOS)
 * Git repository URL (or copy the repo to the server another way)
+
+Staging Terraform uses **us-east-2**. Pass `--region us-east-2` on AWS CLI commands if your default region differs.
 
 ## 2. Bootstrap the server
 
 Connect via SSM (replace instance ID from `terraform output instance_id`):
 
 ```bash
-aws ssm start-session --target INSTANCE_ID
+aws ssm start-session --target INSTANCE_ID --region us-east-2
 ```
 
 On the instance, become root and bootstrap:
@@ -93,13 +96,13 @@ sudo -u ubuntu bash scripts/deploy-staging.sh
 
 First run builds Docker images and installs WordPress + CiviCRM (several minutes).
 
-Verify the site responds (HTTP or HTTPS depending on your TLS setup):
+Verify the site responds over **HTTP** (HTTPS comes in step 5):
 
 ```bash
-curl -I "https://crm-staging.governation.org/"
+curl -I "http://crm-staging.governation.org/"
 ```
 
-Open in browser: `https://crm-staging.governation.org/wp-login.php`
+Open in browser: `http://crm-staging.governation.org/wp-login.php`
 
 ## 5. Enable HTTPS (Certbot on EC2)
 
@@ -111,7 +114,7 @@ After HTTP works:
 sudo bash scripts/setup-staging-tls.sh
 ```
 
-This runs Certbot on host Nginx, updates WordPress URLs to `https://`, and updates `.env`.
+This runs Certbot on host Nginx, updates WordPress and CiviCRM URLs to `https://`, and updates `.env` (including `scripts/fix-civicrm-urls.sh`).
 
 If you previously created an ACM certificate for this domain, it can remain in AWS for other uses, but it cannot be attached to Nginx on EC2. Use Certbot for HTTPS on the instance.
 

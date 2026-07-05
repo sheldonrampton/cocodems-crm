@@ -51,9 +51,10 @@ Changing the root `.env` after `terraform apply` does **not** update the staging
 ## After apply
 
 1. **DNS** — A record: `site_domain` → `public_ip`. See [docs/dns.md](../../../docs/dns.md).
-2. **TLS** — Certbot on the EC2 instance (`scripts/setup-staging-tls.sh`). ACM is not used without a load balancer.
+2. **SSM access** — `aws ssm start-session --target $(terraform output -raw instance_id) --region us-east-2` (requires Session Manager plugin locally).
 3. **Application** — [docs/deployment.md](../../../docs/deployment.md) (bootstrap + deploy scripts).
-4. **Staging access (optional)** — `scripts/setup-staging-auth.sh` for HTTP basic auth, or rely on WordPress/CiviCRM roles.
+4. **TLS** — Certbot on the EC2 instance (`scripts/setup-staging-tls.sh`). ACM is not used without a load balancer.
+5. **Staging access (optional)** — `scripts/setup-staging-auth.sh` for HTTP basic auth, or rely on WordPress/CiviCRM roles.
 
 ## Outputs
 
