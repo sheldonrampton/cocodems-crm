@@ -1,6 +1,6 @@
 # Roadmap
 
-**Version:** 0.2 (Draft)
+**Version:** 0.3 (Draft)
 
 This document outlines prioritized milestones from the initial prototype through a production-ready platform. Milestones are ordered by dependency and value — later items assume earlier ones are substantially complete.
 
@@ -26,14 +26,14 @@ Staging is deployed early (Phase 1) so the Communications Committee can review a
 
 # Phase 1 — Staging Environment
 
-**Goal:** Deploy a password-protected staging site for testing, demonstrations, and pull-request validation — including demos for the CoCoDems Communications Committee before real data is imported.
+**Goal:** Deploy a staging site for testing, demonstrations, and pull-request validation — including demos for the CoCoDems Communications Committee before real data is imported.
 
 | Priority | Milestone | Success criteria |
 |----------|-----------|------------------|
 | P0 | Terraform baseline | Staging environment defined in `infra/terraform/environments/staging` |
 | P0 | Staging deployment | WordPress + CiviCRM running on staging; automated deploy from `main` or a staging branch |
-| P0 | Staging access | Password-protected; committee members can log in and browse CiviCRM |
-| P0 | Staging data policy | Non-production data only; fake email delivery; no real API keys |
+| P0 | Staging access | Committee members can log in via WordPress and browse CiviCRM; HTTP basic auth is optional and not used by default (see [deployment.md](deployment.md)) |
+| P0 | Staging data policy | Safe for experimentation: fake email delivery (no mail to real inboxes); no production API keys for external integrations; sample or empty data until import phases; sanitized production copies allowed later (see P2) |
 | P1 | CI pipeline | GitHub Actions run linting and basic tests on every pull request |
 | P1 | Database backup/restore | `backup-db.sh` and `restore-db.sh` tested against staging |
 | P2 | Production-to-staging sync | `sync-production-to-staging.sh` refreshes staging with sanitized production data (when production exists) |
