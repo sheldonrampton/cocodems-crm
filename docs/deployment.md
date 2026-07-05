@@ -209,6 +209,17 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 # Expected: only "127.0.0.1:8080:80"
 ```
 
+**CiviCRM WordPress Access Control checkboxes do not toggle**
+
+The permission matrix can look fine but checkboxes ignore clicks. Common causes:
+
+1. **Browser extension** (e.g. LastPass) — try an incognito window with extensions disabled.
+2. **Another WordPress plugin** injecting admin CSS — on staging, try deactivating plugins not in this repo (e.g. `import-users-from-csv`) one at a time.
+3. **CSS overlay** — pull latest code (`cocodems-custom` includes admin CSS fixes) and hard-refresh.
+4. **Saving after toggling** — the matrix posts many fields; PHP `max_input_vars` must be ≥ 2000 (set in `docker/php/Dockerfile`). Rebuild the PHP image after pulling: `sudo -u ubuntu bash scripts/deploy-staging.sh`
+
+Inspect a checkbox in DevTools: if the `checked` attribute changes on click but the box looks empty, it is a visual/CSS issue. If `checked` never changes, an overlay or extension is blocking the click.
+
 ---
 
 # Production

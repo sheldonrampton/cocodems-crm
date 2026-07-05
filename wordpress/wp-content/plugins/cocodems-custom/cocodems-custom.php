@@ -25,7 +25,34 @@ define( 'COCODEMS_CRM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
  * Plugin bootstrap.
  */
 function cocodems_custom_bootstrap(): void {
-	// Custom hooks and integrations will be registered here.
+	add_action( 'admin_head', 'cocodems_civicrm_admin_ui_fixes', 100 );
+}
+
+/**
+ * CSS fixes for CiviCRM screens embedded in wp-admin.
+ *
+ * Resolves WordPress Access Control checkboxes that appear but do not toggle,
+ * usually due to admin theme/plugin CSS (appearance: none) or invisible overlays.
+ */
+function cocodems_civicrm_admin_ui_fixes(): void {
+	if ( empty( $_GET['page'] ) || 'CiviCRM' !== $_GET['page'] ) {
+		return;
+	}
+
+	echo '<style>
+		#wpbody-content .crm-container input[type="checkbox"],
+		#wpbody-content .crm-container input[type="radio"] {
+			pointer-events: auto !important;
+			position: relative;
+			z-index: 2;
+			opacity: 1 !important;
+			appearance: auto !important;
+			-webkit-appearance: checkbox !important;
+		}
+		#wpbody-content .blockUI.blockOverlay {
+			display: none !important;
+		}
+	</style>';
 }
 
 add_action( 'plugins_loaded', 'cocodems_custom_bootstrap' );

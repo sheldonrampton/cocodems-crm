@@ -58,6 +58,7 @@ RUN { \
         echo 'post_max_size = 64M'; \
         echo 'memory_limit = 512M'; \
         echo 'max_execution_time = 300'; \
+        echo 'max_input_vars = 3000'; \
     } > /usr/local/etc/php/conf.d/cocodems.ini
 
 COPY --from=build --chown=www-data:www-data /var/www/html /usr/src/wordpress
