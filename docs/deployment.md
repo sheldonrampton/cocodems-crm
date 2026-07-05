@@ -167,15 +167,21 @@ If it persists, add the proxy HTTPS block to `/var/www/private/wp-config.php` in
 
 **CiviCRM shows only “CiviCRM Home” / no menus or contact search**
 
-CiviCRM CSS and JavaScript did not load — usually because the site was installed over HTTP and TLS was enabled later. WordPress URLs were updated but CiviCRM resource URLs were not. On the server:
+CiviCRM CSS and JavaScript did not load — usually because the site was installed over HTTP and TLS was enabled later, or because **resource URL** settings are wrong. WordPress URLs may be correct while CiviCRM still points at bad paths (common: `imageUploadURL` missing `/persist/contribute/`). On the server:
 
 ```bash
 cd /opt/cocodems-crm
-# Ensure .env has CIVICRM_UF_BASEURL=https://your-domain (no path suffix)
+git pull
+# Ensure .env has CIVICRM_UF_BASEURL=https://your-domain
 bash scripts/fix-civicrm-urls.sh
+bash scripts/diagnose-civicrm-urls.sh   # verify runtime URLs
 ```
 
-Then hard-refresh CiviCRM in the browser. Confirm `.env` has `CIVICRM_UF_BASEURL=https://crm-staging.governation.org`.
+`imageUploadURL` should end with `/wp-content/uploads/civicrm/persist/contribute/`. Then hard-refresh CiviCRM (Cmd+Shift+R) and visit the menu rebuild URL if needed:
+
+```
+https://your-domain/wp-admin/admin.php?page=CiviCRM&q=civicrm/menu/rebuild&reset=1
+```
 
 **Cannot connect via SSM**
 

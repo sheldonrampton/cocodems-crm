@@ -11,6 +11,9 @@ ENV_FILE="${REPO_ROOT}/.env"
 CIVI_SETTINGS="/var/www/html/wp-content/uploads/civicrm/civicrm.settings.php"
 OVERRIDE_MARKER="# cocodems-crm URL overrides (scripts/fix-civicrm-urls.sh)"
 
+CIVICRM_ROOT_PATH="/var/www/html/wp-content/plugins/civicrm/civicrm/"
+CIVICRM_FILES_PATH="/var/www/html/wp-content/uploads/civicrm/"
+
 if [[ ! -f "${ENV_FILE}" ]]; then
 	echo "Missing ${ENV_FILE}" >&2
 	exit 1
@@ -32,6 +35,8 @@ fi
 
 RESOURCE_URL="${BASE_URL}wp-content/plugins/civicrm/civicrm/"
 FILES_URL="${BASE_URL}wp-content/uploads/civicrm/"
+IMAGE_UPLOAD_URL="${FILES_URL}persist/contribute/"
+EXTENSIONS_URL="${FILES_URL}ext/"
 CUSTOM_CSS_URL="${FILES_URL}css/"
 
 if [[ -f "${REPO_ROOT}/docker/docker-compose.staging.yml" ]]; then
@@ -44,6 +49,13 @@ if ! ${COMPOSE} exec -T php test -f "${CIVI_SETTINGS}" 2>/dev/null; then
 	echo "CiviCRM settings not found at ${CIVI_SETTINGS}. Run deploy first." >&2
 	exit 1
 fi
+
+echo "==> Ensuring CiviCRM upload directories are writable..."
+${COMPOSE} exec -T php bash -c "
+mkdir -p '${CIVICRM_FILES_PATH}'{persist/contribute/dyn,ext,templates_c,upload,css,ConfigAndLog,custom}
+chown -R www-data:www-data '${CIVICRM_FILES_PATH}'
+chmod -R 775 '${CIVICRM_FILES_PATH}'
+"
 
 echo "==> Updating CiviCRM base URL to ${BASE_URL}..."
 
@@ -66,11 +78,21 @@ if (str_contains(\$content, \$marker)) {
 	\$content = preg_replace('/\\n?' . preg_quote(\$marker, '/') . '[\\s\\S]*\\z/', '', rtrim(\$content));
 }
 \$block = \$marker . \"\\n\"
+  . \"global \\\$civicrm_paths;\\n\"
+  . \"\\\$civicrm_paths['civicrm.root'] = [\\n\"
+  . \"  'path' => '${CIVICRM_ROOT_PATH}',\\n\"
+  . \"  'url' => '${RESOURCE_URL}',\\n\"
+  . \"];\\n\"
+  . \"\\\$civicrm_paths['civicrm.files'] = [\\n\"
+  . \"  'path' => '${CIVICRM_FILES_PATH}',\\n\"
+  . \"  'url' => '${FILES_URL}',\\n\"
+  . \"];\\n\"
   . \"if (!isset(\\\$civicrm_setting['domain'])) {\\n\"
   . \"  \\\$civicrm_setting['domain'] = [];\\n\"
   . \"}\\n\"
   . \"\\\$civicrm_setting['domain']['userFrameworkResourceURL'] = '${RESOURCE_URL}';\\n\"
-  . \"\\\$civicrm_setting['domain']['imageUploadURL'] = '${FILES_URL}';\\n\"
+  . \"\\\$civicrm_setting['domain']['imageUploadURL'] = '${IMAGE_UPLOAD_URL}';\\n\"
+  . \"\\\$civicrm_setting['domain']['extensionsURL'] = '${EXTENSIONS_URL}';\\n\"
   . \"\\\$civicrm_setting['domain']['customCSSURL'] = '${CUSTOM_CSS_URL}';\\n\";
 file_put_contents(\$file, rtrim(\$content) . \"\\n\\n\" . \$block . \"\\n\");
 "
@@ -79,7 +101,7 @@ echo "==> Clearing CiviCRM template cache..."
 ${COMPOSE} exec -T php bash -c 'rm -rf /var/www/html/wp-content/uploads/civicrm/templates_c/* 2>/dev/null || true'
 
 echo "==> Resetting CiviCRM config cache..."
-${COMPOSE} exec -T -u www-data php cv sql "UPDATE civicrm_domain SET config_backend = NULL" 2>/dev/null || true
+${COMPOSE} exec -T -u www-data php cv sql -e "UPDATE civicrm_domain SET config_backend = NULL" 2>/dev/null || true
 
 echo "==> Flushing CiviCRM caches..."
 ${COMPOSE} exec -T -u www-data php cv flush
@@ -89,5 +111,7 @@ ${COMPOSE} exec -T -u www-data php cv ev 'CRM_Core_Invoke::rebuildMenuAndCaches(
 
 echo ""
 echo "CiviCRM URLs updated."
-echo "Reload CiviCRM in your browser (hard refresh). If menus are still missing, visit:"
+echo "Run: bash scripts/diagnose-civicrm-urls.sh"
+echo "Then hard-refresh CiviCRM in your browser."
+echo "If menus are still missing, visit:"
 echo "  ${BASE_URL%/}/wp-admin/admin.php?page=CiviCRM&q=civicrm/menu/rebuild&reset=1"
