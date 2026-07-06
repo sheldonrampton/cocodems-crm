@@ -143,6 +143,15 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 
 Set `HTTP_PORT` in `.env` (e.g. `8081`) and set `CIVICRM_UF_BASEURL=http://localhost:8081` to match. If the stack was already installed, run `down -v` and reinstall, or update WordPress URLs manually (see Configuration above).
 
+**Upgrade CiviCRM**
+
+Default version is **6.16.0** (`CIVICRM_VERSION` in `docker/php/Dockerfile`). After changing the version:
+
+```bash
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up -d --build
+bash scripts/upgrade-civicrm.sh
+```
+
 ## Production
 
 This Compose file is for **local development only**. Production deployment uses Terraform on AWS EC2 — see [architecture.md](../docs/architecture.md) and [ADR-0004](../docs/adr/0004-aws-ec2.md).

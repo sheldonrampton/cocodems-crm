@@ -2,7 +2,7 @@
 # Based on patterns from https://github.com/civicrm/civicrm-docker
 
 ARG WORDPRESS_VERSION=
-ARG CIVICRM_VERSION=6.0.3
+ARG CIVICRM_VERSION=6.16.0
 
 FROM wordpress:php8.2-fpm AS build
 

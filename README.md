@@ -80,7 +80,8 @@ cocodems-crm/
 │   ├── setup-staging-tls.sh
 │   ├── setup-staging-auth.sh
 │   ├── fix-civicrm-urls.sh        # After TLS or domain changes
-│   └── diagnose-civicrm-urls.sh
+│   ├── diagnose-civicrm-urls.sh
+│   └── upgrade-civicrm.sh         # After bumping CIVICRM_VERSION
 │
 ├── backups/                       # (planned) Local backup storage (gitignored)
 │
