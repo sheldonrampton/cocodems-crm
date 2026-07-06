@@ -102,6 +102,8 @@ Verify the site responds over **HTTP** (HTTPS comes in step 5):
 curl -I "http://crm-staging.governation.org/"
 ```
 
+After step 5 (TLS), use `https://`. Re-running `deploy-staging.sh` restores HTTPS automatically if a Let's Encrypt certificate already exists.
+
 Open in browser: `http://crm-staging.governation.org/wp-login.php`
 
 ## 5. Enable HTTPS (Certbot on EC2)
@@ -208,6 +210,16 @@ Verify the merged config shows a **single** port mapping:
 docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.staging.yml config | grep -A2 'nginx:' | grep ports -A2
 # Expected: only "127.0.0.1:8080:80"
 ```
+
+**`ERR_CONNECTION_CLOSED` on HTTPS after `deploy-staging.sh`**
+
+`deploy-staging.sh` reinstalls an HTTP-only host Nginx config. That removes Certbot's `:443` server block until HTTPS is restored. Fix:
+
+```bash
+sudo bash scripts/setup-staging-tls.sh
+```
+
+Or pull the latest `deploy-staging.sh`, which re-runs Certbot automatically when a certificate already exists. Verify port 443 is listening: `sudo ss -tlnp | grep 443`
 
 **CiviCRM WordPress Access Control checkboxes do not toggle**
 

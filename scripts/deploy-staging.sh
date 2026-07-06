@@ -59,6 +59,13 @@ sudo ln -sf "${NGINX_SITE}" /etc/nginx/sites-enabled/cocodems-staging
 sudo nginx -t
 sudo systemctl reload nginx
 
+# deploy-staging.sh writes HTTP-only config. If Certbot already issued a cert,
+# re-apply the HTTPS server block so port 443 keeps listening.
+if [[ -f "/etc/letsencrypt/live/${SITE_DOMAIN}/fullchain.pem" ]]; then
+	echo "==> Restoring HTTPS (existing Let's Encrypt certificate)..."
+	sudo certbot --nginx -d "${SITE_DOMAIN}" --non-interactive --redirect
+fi
+
 echo ""
 echo "Deploy complete."
 echo "  Site URL: ${CIVICRM_UF_BASEURL}"
