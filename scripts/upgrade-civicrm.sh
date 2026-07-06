@@ -23,6 +23,10 @@ else
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.local.yml"
 fi
 
+# cv stores upgrade state under XDG_STATE_HOME (www-data cannot write /var/www/.cv).
+CV_STATE_DIR="/var/www/private/.cv-state"
+CV_EXEC=(exec -T -u www-data -e "XDG_STATE_HOME=${CV_STATE_DIR}")
+
 CIVI_SRC="/usr/src/wordpress/wp-content/plugins/civicrm"
 CIVI_DST="/var/www/html/wp-content/plugins/civicrm"
 
@@ -30,6 +34,9 @@ if ! ${COMPOSE} exec -T php test -d "${CIVI_SRC}" 2>/dev/null; then
 	echo "CiviCRM not found in image at ${CIVI_SRC}. Rebuild the PHP container first." >&2
 	exit 1
 fi
+
+echo "==> Ensuring cv state directory is writable..."
+${COMPOSE} exec -T php bash -c "mkdir -p '${CV_STATE_DIR}' && chown -R www-data:www-data '${CV_STATE_DIR}'"
 
 echo "==> Replacing CiviCRM plugin files from image..."
 ${COMPOSE} exec -T php bash -c "
@@ -39,11 +46,11 @@ ${COMPOSE} exec -T php bash -c "
 "
 
 echo "==> Running CiviCRM database upgrade..."
-${COMPOSE} exec -T -u www-data php cv upgrade:db
+${COMPOSE} "${CV_EXEC[@]}" php cv upgrade:db
 
 echo "==> Flushing CiviCRM caches..."
-${COMPOSE} exec -T -u www-data php cv flush
+${COMPOSE} "${CV_EXEC[@]}" php cv flush
 
 echo ""
 echo "CiviCRM upgrade complete."
-${COMPOSE} exec -T -u www-data php cv ev 'echo "Version: " . CRM_Utils_System::version() . PHP_EOL;'
+${COMPOSE} "${CV_EXEC[@]}" php cv ev 'echo "Version: " . CRM_Utils_System::version() . PHP_EOL;'

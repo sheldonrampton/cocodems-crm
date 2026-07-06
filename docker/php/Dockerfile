@@ -65,11 +65,12 @@ COPY --from=build --chown=www-data:www-data /var/www/html /usr/src/wordpress
 COPY wp-config.php /usr/src/wordpress/wp-config.php
 COPY cocodems-entrypoint.sh install-site.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/cocodems-entrypoint.sh /usr/local/bin/install-site.sh \
-    && mkdir -p /var/www/private \
-    && chown www-data:www-data /var/www/private
+    && mkdir -p /var/www/private /var/www/private/.cv-state \
+    && chown -R www-data:www-data /var/www/private
 
 ENV CIVICRM_UF=WordPress \
-    WORDPRESS_CONFIG_FILE=/var/www/private/wp-config.php
+    WORDPRESS_CONFIG_FILE=/var/www/private/wp-config.php \
+    XDG_STATE_HOME=/var/www/private/.cv-state
 
 ENTRYPOINT ["cocodems-entrypoint.sh"]
 CMD ["php-fpm"]

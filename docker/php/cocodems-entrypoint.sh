@@ -41,7 +41,13 @@ maybe_install_site() {
 	gosu www-data install-site.sh
 }
 
+ensure_cv_state_dir() {
+	mkdir -p /var/www/private/.cv-state
+	chown -R www-data:www-data /var/www/private/.cv-state
+}
+
 source_wordpress
+ensure_cv_state_dir
 wait_for_database
 maybe_install_site
 

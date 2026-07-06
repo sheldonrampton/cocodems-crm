@@ -155,6 +155,12 @@ sudo -u ubuntu bash scripts/upgrade-civicrm.sh
 
 Verify in the CiviCRM UI footer or with `cv ev 'echo CRM_Utils_System::version();'` inside the PHP container. See [CiviCRM 6.16 release notes](https://civicrm.org/blog/dev-team/civicrm-616-release).
 
+If `cv upgrade:db` fails with `Permission denied` on `/var/www/.cv/upgrade`, pull the latest `upgrade-civicrm.sh` (uses `XDG_STATE_HOME`) or rebuild the PHP image.
+
+**Docker Compose warns `The "g6" variable is not set`**
+
+A password in `.env` contains `$` followed by letters (e.g. `pass$word`). Compose treats that as a variable reference. Escape each `$` as `$$` in password values, then redeploy.
+
 ---
 
 # Troubleshooting
