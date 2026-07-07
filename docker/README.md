@@ -67,7 +67,7 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 | Service | Image / build | Role |
 |---------|---------------|------|
 | `nginx` | `nginx:1.27-alpine` | HTTP reverse proxy to PHP-FPM |
-| `php` | `docker/php/Dockerfile` | WordPress + CiviCRM on PHP 8.2 FPM |
+| `php` | `docker/php/Dockerfile` | WordPress + CiviCRM on PHP 8.4 FPM |
 | `mariadb` | `mariadb:10.11` | Database for WordPress and CiviCRM |
 
 ## Volumes and mounts

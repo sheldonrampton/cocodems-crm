@@ -4,7 +4,7 @@
 ARG WORDPRESS_VERSION=
 ARG CIVICRM_VERSION=6.16.0
 
-FROM wordpress:php8.2-fpm AS build
+FROM wordpress:php8.4-fpm AS build
 
 ARG WORDPRESS_VERSION
 ARG CIVICRM_VERSION
@@ -27,7 +27,7 @@ RUN if [ -n "${WORDPRESS_VERSION}" ]; then \
     && unzip /tmp/civicrm.zip -d wp-content/plugins \
     && rm /tmp/civicrm.zip
 
-FROM wordpress:php8.2-fpm
+FROM wordpress:php8.4-fpm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
