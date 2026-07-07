@@ -130,6 +130,79 @@ Consider basic auth only if you want the **entire** staging site (including publ
 sudo bash scripts/setup-staging-auth.sh
 ```
 
+## 7. Staging mail policy (no real email)
+
+Phase 1 staging must not send mail to real inboxes ([roadmap](roadmap.md), [architecture](architecture.md)). CiviCRM has two separate mail concerns:
+
+| Setting | Purpose | Staging recommendation |
+|---------|---------|------------------------|
+| **Environment** | Global production vs staging mode | Set to **Staging** |
+| **Outbound Email** | SMTP / sending mailings | **Disable Outbound Email** (auto when Environment = Staging via UI) |
+| **Default mailbox** | Inbound IMAP for bounces / email-to-activity | **Skip for now** unless you are testing CiviMail |
+| **Scheduled jobs** | Cron sends mailings, fetches bounces | **Disable** mail-related jobs |
+
+### Recommended UI steps (do this once)
+
+1. **Administer → System Settings → Debugging and Error Handling**
+   - Set **Environment** to **Staging**
+   - Save
+
+   When set via the UI, CiviCRM automatically sets outbound mail to [Disable Outbound Email](https://docs.civicrm.org/sysadmin/en/latest/misc/staging-production/).
+
+2. **Administer → System Settings → Outbound Email**
+   - Confirm **Disable Outbound Email** is selected (not SMTP or `mail()`).
+
+3. **Administer → System Settings → Scheduled Jobs**
+   - Set **Enabled?** to **No** for:
+     - Send Scheduled Mailings
+     - Fetch Bounces
+     - Process Inbound Emails
+   - Do not configure CiviCRM cron on staging until you deliberately test mail.
+
+4. **Default mailbox (System Status warning)**
+   - The “configure a default mailbox” check is for **inbound bounce processing** ([CiviMail mail accounts](https://docs.civicrm.org/sysadmin/en/latest/setup/civimail/)).
+   - For committee demos and CRM testing **without CiviMail**, it is fine to **leave this warning** until you need outbound mail in a later phase.
+   - Do **not** point staging at production IMAP/SMTP credentials.
+   - When you later test mailings on staging, use either:
+     - **Redirect to Database** (Administer → System Settings → Outbound Email) so messages are stored in CiviCRM but not sent, or
+     - A dedicated throwaway staging mailbox plus disabled bounce-fetch jobs until you are ready.
+
+### Optional: harden via `civicrm.settings.php`
+
+To survive database copies from production or manual UI changes, add overrides in `/var/www/html/wp-content/uploads/civicrm/civicrm.settings.php` (inside the PHP container):
+
+```php
+// cocodems-crm staging mail policy
+$civicrm_setting['domain']['environment'] = 'Staging';
+$civicrm_setting['Mailing Preferences']['mailing_backend']['outBound_option'] = 0; // Disable outbound email
+
+// Discard any mail that does slip through (belt-and-suspenders)
+define('CIVICRM_MAIL_LOG', '/dev/null');
+```
+
+`outBound_option` values: `0` = disabled, `5` = redirect to database (useful when testing template content without sending).
+
+After editing, run `bash scripts/fix-civicrm-urls.sh` or `cv flush` inside the PHP container.
+
+### Testing mail content later (still no real delivery)
+
+If you want committee members to **preview** mailing HTML without delivery:
+
+1. Set Environment to **Staging** (keep outbound disabled or use **Redirect to Database**).
+2. Create test mailings; they appear in CiviCRM rather than being delivered ([redirect to database](https://civicrm.stackexchange.com/questions/21986/email-redirect-to-database-setting-for-civicrm-settings-php)).
+
+Production mail (real SMTP, bounce mailbox, cron) is a **Phase 6** milestone ([roadmap](roadmap.md)).
+
+**CiviCRM System Status: “Private Files Readable” / debug log downloadable**
+
+Nginx does not use `.htaccess`, so CiviCRM upload directories must be blocked in `docker/nginx/default.conf`. Pull latest code and reload Docker Nginx:
+
+```bash
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.staging.yml restart nginx
+```
+
+Verify a blocked path returns 404, e.g. `https://your-domain/wp-content/uploads/civicrm/ConfigAndLog/` (should not list or download files). Re-check System Status in CiviCRM.
+
 ---
 
 # Staging — updates
