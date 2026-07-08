@@ -35,8 +35,6 @@ fi
 
 RESOURCE_URL="${BASE_URL}wp-content/plugins/civicrm/civicrm/"
 FILES_URL="${BASE_URL}wp-content/uploads/civicrm/"
-IMAGE_UPLOAD_URL="${FILES_URL}persist/contribute/"
-EXTENSIONS_URL="${FILES_URL}ext/"
 
 if [[ -f "${REPO_ROOT}/docker/docker-compose.staging.yml" ]]; then
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.staging.yml"
@@ -51,7 +49,7 @@ fi
 
 echo "==> Ensuring CiviCRM upload directories are writable..."
 ${COMPOSE} exec -T php bash -c "
-mkdir -p '${CIVICRM_FILES_PATH}'{persist/contribute/dyn,ext,templates_c,upload,css,ConfigAndLog,custom}
+mkdir -p '${CIVICRM_FILES_PATH}'{persist/contribute/dyn,ext,templates_c,upload,css,ConfigAndLog,custom,custom_templates,custom_php}
 chown -R www-data:www-data '${CIVICRM_FILES_PATH}'
 chmod -R 775 '${CIVICRM_FILES_PATH}'
 "
@@ -89,9 +87,15 @@ if (str_contains(\$content, \$marker)) {
   . \"if (!isset(\\\$civicrm_setting['domain'])) {\\n\"
   . \"  \\\$civicrm_setting['domain'] = [];\\n\"
   . \"}\\n\"
-  . \"\\\$civicrm_setting['domain']['userFrameworkResourceURL'] = '${RESOURCE_URL}';\\n\"
-  . \"\\\$civicrm_setting['domain']['imageUploadURL'] = '${IMAGE_UPLOAD_URL}';\\n\"
-  . \"\\\$civicrm_setting['domain']['extensionsURL'] = '${EXTENSIONS_URL}';\\n\"
+  . \"\\\$civicrm_setting['domain']['uploadDir'] = '[civicrm.files]/upload/';\\n\"
+  . \"\\\$civicrm_setting['domain']['imageUploadDir'] = '[civicrm.files]/persist/contribute/';\\n\"
+  . \"\\\$civicrm_setting['domain']['customFileUploadDir'] = '[civicrm.files]/custom/';\\n\"
+  . \"\\\$civicrm_setting['domain']['customTemplateDir'] = '[civicrm.files]/custom_templates/';\\n\"
+  . \"\\\$civicrm_setting['domain']['customPHPPathDir'] = '[civicrm.files]/custom_php/';\\n\"
+  . \"\\\$civicrm_setting['domain']['extensionsDir'] = '[civicrm.files]/ext/';\\n\"
+  . \"\\\$civicrm_setting['domain']['userFrameworkResourceURL'] = '[civicrm.root]/';\\n\"
+  . \"\\\$civicrm_setting['domain']['imageUploadURL'] = '[civicrm.files]/persist/contribute/';\\n\"
+  . \"\\\$civicrm_setting['domain']['extensionsURL'] = '[civicrm.files]/ext/';\\n\"
   . \"unset(\\\$civicrm_setting['domain']['customCSSURL']);\\n\";
 file_put_contents(\$file, rtrim(\$content) . \"\\n\\n\" . \$block . \"\\n\");
 "

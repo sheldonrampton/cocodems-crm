@@ -203,6 +203,16 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 
 Verify a blocked path returns 404, e.g. `https://your-domain/wp-content/uploads/civicrm/ConfigAndLog/` (should not list or download files). Re-check System Status in CiviCRM.
 
+**CiviCRM System Status: “Resource URLs: Make them portable”**
+
+CiviCRM prefers path variables (e.g. `[civicrm.root]/`, `[civicrm.files]/persist/contribute/`) over hard-coded `https://…` URLs in Resource URLs and Directories. Re-run:
+
+```bash
+bash scripts/fix-civicrm-urls.sh
+```
+
+Then refresh System Status. The script keeps absolute paths only in `$civicrm_paths` (where `[civicrm.root]` and `[civicrm.files]` are defined) and uses variables for all domain URL/directory settings.
+
 ---
 
 # Staging — updates
@@ -274,7 +284,7 @@ bash scripts/fix-civicrm-urls.sh
 bash scripts/diagnose-civicrm-urls.sh   # verify runtime URLs
 ```
 
-`imageUploadURL` should end with `/wp-content/uploads/civicrm/persist/contribute/`. Leave **Custom CSS URL** blank (our fix script clears it). Then hard-refresh CiviCRM (Cmd+Shift+R) and visit the menu rebuild URL if needed:
+`imageUploadURL` should be `[civicrm.files]/persist/contribute/` (portable path variables, not a full `https://…` URL). Leave **Custom CSS URL** blank (our fix script clears it). Then hard-refresh CiviCRM (Cmd+Shift+R) and visit the menu rebuild URL if needed:
 
 ```
 https://your-domain/wp-admin/admin.php?page=CiviCRM&q=civicrm/menu/rebuild&reset=1

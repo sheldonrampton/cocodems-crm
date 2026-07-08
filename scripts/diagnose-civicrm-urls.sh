@@ -22,6 +22,8 @@ echo "customCSSURL: {$c->customCSSURL}\n";
 echo "extensionsURL: " . ($c->extensionsURL ?? "(unset)") . "\n";
 echo "uploadDir: {$c->uploadDir}\n";
 echo "imageUploadDir: {$c->imageUploadDir}\n";
+echo "customFileUploadDir: {$c->customFileUploadDir}\n";
+echo "extensionsDir: " . ($c->extensionsDir ?? "(unset)") . "\n";
 ' 2>/dev/null || true
 
 echo ""
