@@ -12,11 +12,11 @@ locals {
 module "vpc" {
   source = "../../modules/vpc"
 
-  name_prefix         = local.name_prefix
-  cidr_block          = var.vpc_cidr_block
-  public_subnet_cidr  = var.public_subnet_cidr
-  availability_zone   = var.availability_zone
-  tags                = local.common_tags
+  name_prefix        = local.name_prefix
+  cidr_block         = var.vpc_cidr_block
+  public_subnet_cidr = var.public_subnet_cidr
+  availability_zone  = var.availability_zone
+  tags               = local.common_tags
 }
 
 module "security_groups" {

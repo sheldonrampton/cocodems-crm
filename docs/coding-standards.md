@@ -262,7 +262,13 @@ Run these before opening a pull request when applicable:
 | `terraform fmt` | Terraform | `terraform fmt -recursive infra/` |
 | `terraform validate` | Terraform | per environment |
 
-CI (`.github/workflows/ci.yml`) should automate these checks as the project matures.
+CI (`.github/workflows/ci.yml`) runs PHPCS, PHPUnit, ShellCheck, Terraform checks, and Docker Compose validation on every pull request. Locally:
+
+```bash
+composer install
+composer run lint:php
+composer run test
+```
 
 ---
 

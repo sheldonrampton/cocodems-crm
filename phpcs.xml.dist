@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="CoCoDems CRM">
+	<description>PHP coding standards for CoCoDems CRM custom WordPress code.</description>
+
+	<file>wordpress/wp-content/plugins/cocodems-custom</file>
+	<file>wordpress/wp-content/themes/cocodems-theme</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+
+	<rule ref="WordPress">
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+	</rule>
+
+	<rule ref="PHPCompatibilityWP"/>
+
+	<config name="minimum_supported_wp_version" value="6.0"/>
+	<config name="testVersion" value="8.1-"/>
+</ruleset>
