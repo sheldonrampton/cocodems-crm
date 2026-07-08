@@ -86,6 +86,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Compose requires MYSQL_* and CIVICRM_ADMIN_PASS; .env is gitignored.
+      - name: Prepare Compose environment
+        run: cp .env.example .env
+
       - name: Validate local Compose stack
         run: |
           docker compose --project-directory . \
