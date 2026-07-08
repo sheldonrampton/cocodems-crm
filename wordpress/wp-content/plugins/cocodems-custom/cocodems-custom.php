@@ -35,7 +35,9 @@ function cocodems_custom_bootstrap(): void {
  * usually due to admin theme/plugin CSS (appearance: none) or invisible overlays.
  */
 function cocodems_civicrm_admin_ui_fixes(): void {
-	if ( empty( $_GET['page'] ) || 'CiviCRM' !== $_GET['page'] ) {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin screen routing.
+	$page = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+	if ( 'CiviCRM' !== $page ) {
 		return;
 	}
 

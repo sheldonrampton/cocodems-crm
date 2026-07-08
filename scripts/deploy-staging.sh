@@ -54,6 +54,7 @@ done
 
 echo "==> Installing host Nginx reverse proxy for ${SITE_DOMAIN}..."
 export SITE_DOMAIN
+# shellcheck disable=SC2016
 envsubst '${SITE_DOMAIN}' < "${NGINX_TEMPLATE}" | sudo tee "${NGINX_SITE}" > /dev/null
 sudo ln -sf "${NGINX_SITE}" /etc/nginx/sites-enabled/cocodems-staging
 sudo nginx -t

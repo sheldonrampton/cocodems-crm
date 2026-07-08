@@ -17,6 +17,32 @@ Log in at **http://localhost:8080/wp-login.php** using `CIVICRM_ADMIN_USER` and 
 
 See [docker/README.md](docker/README.md) for details, troubleshooting, and common commands.
 
+## Continuous integration
+
+Pull requests run [GitHub Actions](.github/workflows/ci.yml): PHP lint (PHPCS), PHPUnit, ShellCheck, Terraform format/validate, and Docker Compose config checks.
+
+Install Composer once (macOS with Homebrew):
+
+```bash
+brew install composer
+```
+
+Then from the repo root:
+
+```bash
+composer install
+composer run lint:php   # WordPress coding standards
+composer run test       # PHPUnit smoke tests
+```
+
+No local Composer install? Use Docker instead:
+
+```bash
+docker run --rm -v "$(pwd):/app" -w /app composer:2 install
+docker run --rm -v "$(pwd):/app" -w /app composer:2 run lint:php
+docker run --rm -v "$(pwd):/app" -w /app composer:2 run test
+```
+
 ## Staging deployment
 
 Staging runs on AWS EC2 (Terraform + deploy scripts). See [docs/deployment.md](docs/deployment.md) for the full runbook.
@@ -26,6 +52,64 @@ Quick sequence after `terraform apply`:
 1. SSM into the instance (`--region us-east-2`)
 2. `bootstrap-staging-server.sh` → copy `.env.staging.example` to `.env` → `deploy-staging.sh`
 3. `setup-staging-tls.sh` (HTTPS + CiviCRM URL sync)
+
+# Contributing
+
+## Workflow
+
+Use a **branch and pull request** for most changes:
+
+```bash
+git checkout main
+git pull
+git checkout -b fix/short-description   # or feature/..., docs/...
+# edit, then run local checks (below)
+git add .
+git commit -m "Explain why this change is needed"
+git push -u origin fix/short-description
+```
+
+Open a pull request on GitHub. [CI](.github/workflows/ci.yml) runs automatically. Merge when checks pass and the change looks right.
+
+**Direct commits to `main`** are possible and also trigger CI, but prefer branches and PRs for anything that touches PHP, Terraform, Docker, or deploy scripts. One focused change per PR is easier to review and revert.
+
+## Before you push
+
+Run the same checks CI uses (see [Continuous integration](#continuous-integration) above):
+
+```bash
+composer run lint:php
+composer run test
+```
+
+For infrastructure or script changes, also run when you can:
+
+```bash
+terraform fmt -check -recursive infra/terraform
+shellcheck -S error scripts/*.sh   # requires shellcheck
+```
+
+Follow [docs/coding-standards.md](docs/coding-standards.md). Record non-obvious architectural choices in [docs/adr/](docs/adr/).
+
+## What not to commit
+
+Never commit secrets or environment-specific data:
+
+* `.env` files (use `.env.example` / `.env.staging.example` as templates)
+* Database dumps, backups, or `wordpress/wp-content/uploads/`
+* TLS keys, API tokens, or `*.pem` files
+
+## After merge
+
+Automated staging deploy is not wired up yet (`deploy-staging.yml` is planned). After merging to `main`, update staging manually on the server:
+
+```bash
+cd /opt/cocodems-crm
+git pull
+sudo -u ubuntu bash scripts/deploy-staging.sh
+```
+
+See [docs/deployment.md](docs/deployment.md) for TLS, CiviCRM upgrades, and troubleshooting.
 
 # Repository Structure
 
@@ -85,13 +169,13 @@ cocodems-crm/
 │
 ├── backups/                       # (planned) Local backup storage (gitignored)
 │
-├── tests/                         # (planned) Automated tests
+├── tests/                         # PHPUnit smoke tests
 │
-└── .github/                       # (planned) CI/CD and GitHub templates
+└── .github/                       # GitHub Actions and templates
     ├── workflows/
-    │   ├── ci.yml
-    │   ├── deploy-staging.yml
-    │   └── deploy-production.yml
+    │   ├── ci.yml                 # Lint and test on pull requests
+    │   ├── deploy-staging.yml     # (planned)
+    │   └── deploy-production.yml  # (planned)
     │
     ├── ISSUE_TEMPLATE/
     └── pull_request_template.md

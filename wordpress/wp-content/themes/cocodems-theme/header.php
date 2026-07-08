@@ -1,3 +1,11 @@
+<?php
+/**
+ * Header template.
+ *
+ * @package CoCoDems
+ */
+
+?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>

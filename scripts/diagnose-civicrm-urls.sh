@@ -14,6 +14,7 @@ ${COMPOSE} exec -T php grep -E "CIVICRM_UF_BASEURL|cocodems-crm URL|userFramewor
 
 echo ""
 echo "==> Active CiviCRM config (runtime)"
+# shellcheck disable=SC2016
 ${COMPOSE} exec -T -u www-data php cv ev '
 $c = CRM_Core_Config::singleton();
 echo "userFrameworkResourceURL: {$c->userFrameworkResourceURL}\n";
