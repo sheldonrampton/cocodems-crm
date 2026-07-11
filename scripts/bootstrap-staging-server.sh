@@ -53,4 +53,6 @@ rm -f /etc/nginx/sites-enabled/default
 echo "==> Bootstrap complete."
 echo "Next: deploy the application as the ubuntu user:"
 echo "  sudo -u ubuntu bash /opt/cocodems-crm/scripts/deploy-staging.sh"
+echo "After deploy and BACKUP_S3_BUCKET in .env:"
+echo "  sudo bash /opt/cocodems-crm/scripts/setup-staging-backup-cron.sh"
 echo "Or clone the repo first — see docs/deployment.md"
