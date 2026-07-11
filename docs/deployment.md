@@ -66,7 +66,7 @@ cd /opt/cocodems-crm
 bash scripts/bootstrap-staging-server.sh
 ```
 
-`bootstrap-staging-server.sh` installs Docker, Nginx, and Certbot, and removes the default Nginx site (which otherwise causes empty replies on port 80).
+`bootstrap-staging-server.sh` installs Docker, Nginx, Certbot, and the AWS CLI, and removes the default Nginx site (which otherwise causes empty replies on port 80).
 
 ## 3. Configure staging environment
 
@@ -239,6 +239,60 @@ sudo -u ubuntu bash scripts/upgrade-civicrm.sh
 Verify in the CiviCRM UI footer or with `cv ev 'echo CRM_Utils_System::version();'` inside the PHP container. See [CiviCRM 6.16 release notes](https://civicrm.org/blog/dev-team/civicrm-616-release).
 
 If `cv upgrade:db` fails with `Permission denied` on `/var/www/.cv/upgrade`, pull the latest `upgrade-civicrm.sh` (uses `XDG_STATE_HOME`) or rebuild the PHP image.
+
+## Database backup and restore
+
+Backups use `mysqldump` from the MariaDB container. Dumps are stored under `backups/db/` on the server (gitignored).
+
+**Prerequisites**
+
+* `scripts/backup-db.sh` and `scripts/restore-db.sh` (from this repo).
+* For S3 upload or `s3://` restore: **AWS CLI** on the host. New servers get it from `bootstrap-staging-server.sh`. On an **existing** staging server, install once (no Docker restart, no data loss):
+
+```bash
+sudo apt-get update
+sudo apt-get install -y awscli
+```
+
+Add the backup bucket to `/opt/cocodems-crm/.env` (from your laptop: `terraform output -raw backup_bucket_name` in `infra/terraform/environments/staging`):
+
+```bash
+BACKUP_S3_BUCKET=cocodems-staging-columbia-backups-UNIQUE-SUFFIX
+```
+
+The EC2 instance profile already has S3 write access to that bucket (Terraform `iam-ec2-role` module).
+
+**Backup** (on the staging server):
+
+```bash
+cd /opt/cocodems-crm
+
+# Local file only
+bash scripts/backup-db.sh
+
+# Also upload to the Terraform S3 backup bucket
+bash scripts/backup-db.sh --upload
+```
+
+**Restore** (destructive — replaces the current database):
+
+```bash
+cd /opt/cocodems-crm
+bash scripts/restore-db.sh backups/db/cocodems-YYYYMMDD-HHMMSS.sql.gz
+# or skip the prompt:
+bash scripts/restore-db.sh backups/db/cocodems-YYYYMMDD-HHMMSS.sql.gz --yes
+
+# From S3:
+bash scripts/restore-db.sh s3://BUCKET/cocodems/db/cocodems-YYYYMMDD-HHMMSS.sql.gz --yes
+```
+
+After restore, verify WordPress login and CiviCRM **Administer → System Status**. The restore script runs `cv flush` when CiviCRM is available.
+
+Schedule daily backups with cron on the server (example, 03:15 UTC):
+
+```cron
+15 3 * * * cd /opt/cocodems-crm && /usr/bin/bash scripts/backup-db.sh --upload >> /var/log/cocodems-backup.log 2>&1
+```
 
 **Docker Compose warns `The "g6" variable is not set`**
 

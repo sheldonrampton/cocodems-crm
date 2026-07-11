@@ -35,7 +35,7 @@ Staging is deployed early (Phase 1) so the Communications Committee can review a
 | P0 | Staging access | Committee members can log in via WordPress and browse CiviCRM; HTTP basic auth is optional and not used by default (see [deployment.md](deployment.md)) |
 | P0 | Staging data policy | Safe for experimentation: fake email delivery (no mail to real inboxes); no production API keys for external integrations; sample or empty data until import phases; sanitized production copies allowed later (see P2) |
 | P1 | CI pipeline | GitHub Actions run linting and basic tests on every pull request — see `.github/workflows/ci.yml` |
-| P1 | Database backup/restore | `backup-db.sh` and `restore-db.sh` tested against staging |
+| P1 | Database backup/restore | `backup-db.sh` and `restore-db.sh` — see [deployment.md](deployment.md#database-backup-and-restore) |
 | P2 | Production-to-staging sync | `sync-production-to-staging.sh` refreshes staging with sanitized production data (when production exists) |
 
 ---

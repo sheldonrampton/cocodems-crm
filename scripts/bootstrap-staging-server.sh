@@ -37,6 +37,9 @@ fi
 echo "==> Installing Certbot..."
 apt-get install -y -qq certbot python3-certbot-nginx
 
+echo "==> Installing AWS CLI (S3 backups via scripts/backup-db.sh --upload)..."
+apt-get install -y -qq awscli
+
 echo "==> Adding ubuntu user to docker group..."
 usermod -aG docker ubuntu || true
 

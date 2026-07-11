@@ -165,9 +165,11 @@ cocodems-crm/
 │   ├── setup-staging-auth.sh
 │   ├── fix-civicrm-urls.sh        # After TLS or domain changes
 │   ├── diagnose-civicrm-urls.sh
-│   └── upgrade-civicrm.sh         # After bumping CIVICRM_VERSION
+│   ├── upgrade-civicrm.sh         # After bumping CIVICRM_VERSION
+│   ├── backup-db.sh               # MariaDB dump (optional S3 upload)
+│   └── restore-db.sh              # Restore from local file or s3://
 │
-├── backups/                       # (planned) Local backup storage (gitignored)
+├── backups/                       # Local backup storage (gitignored)
 │
 ├── tests/                         # PHPUnit smoke tests
 │
