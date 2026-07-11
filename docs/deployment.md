@@ -318,6 +318,12 @@ sudo bash scripts/setup-staging-backup-cron.sh --uninstall
 
 The cron wrapper uses `sg docker` so backups work from cron (non-login shells do not inherit the `docker` group). Logs append to `/var/log/cocodems-backup.log`.
 
+If cron logs show `Permission denied` on `backups/db/`, the directory was probably created by root during a manual backup. Re-run the setup script (it `chown`s `backups/` to `ubuntu`), or fix once:
+
+```bash
+sudo chown -R ubuntu:ubuntu /opt/cocodems-crm/backups
+```
+
 **Docker Compose warns `The "g6" variable is not set`**
 
 A password in `.env` contains `$` followed by letters (e.g. `pass$word`). Compose treats that as a variable reference. Escape each `$` as `$$` in password values, then redeploy.
