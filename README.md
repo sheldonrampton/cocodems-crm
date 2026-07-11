@@ -167,7 +167,9 @@ cocodems-crm/
 │   ├── diagnose-civicrm-urls.sh
 │   ├── upgrade-civicrm.sh         # After bumping CIVICRM_VERSION
 │   ├── backup-db.sh               # MariaDB dump (optional S3 upload)
-│   └── restore-db.sh              # Restore from local file or s3://
+│   ├── restore-db.sh              # Restore from local file or s3://
+│   ├── cron-backup-db.sh          # Cron entrypoint (docker group wrapper)
+│   └── setup-staging-backup-cron.sh
 │
 ├── backups/                       # Local backup storage (gitignored)
 │

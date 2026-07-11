@@ -288,11 +288,35 @@ bash scripts/restore-db.sh s3://BUCKET/cocodems/db/cocodems-YYYYMMDD-HHMMSS.sql.
 
 After restore, verify WordPress login and CiviCRM **Administer → System Status**. The restore script runs `cv flush` when CiviCRM is available.
 
-Schedule daily backups with cron on the server (example, 03:15 UTC):
+**Scheduled daily backups**
 
-```cron
-15 3 * * * cd /opt/cocodems-crm && /usr/bin/bash scripts/backup-db.sh --upload >> /var/log/cocodems-backup.log 2>&1
+Install a cron job (default **03:15 UTC** daily, uploads to S3):
+
+```bash
+cd /opt/cocodems-crm
+sudo bash scripts/setup-staging-backup-cron.sh
 ```
+
+Custom time (UTC):
+
+```bash
+sudo bash scripts/setup-staging-backup-cron.sh --hour 4 --minute 30
+```
+
+Test without waiting for cron:
+
+```bash
+sudo -u ubuntu bash /opt/cocodems-crm/scripts/cron-backup-db.sh
+tail -f /var/log/cocodems-backup.log
+```
+
+Remove the cron job:
+
+```bash
+sudo bash scripts/setup-staging-backup-cron.sh --uninstall
+```
+
+The cron wrapper uses `sg docker` so backups work from cron (non-login shells do not inherit the `docker` group). Logs append to `/var/log/cocodems-backup.log`.
 
 **Docker Compose warns `The "g6" variable is not set`**
 
