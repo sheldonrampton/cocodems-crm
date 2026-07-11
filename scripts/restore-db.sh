@@ -3,7 +3,8 @@
 #
 #   bash scripts/restore-db.sh backups/db/cocodems-20260708-120000.sql.gz
 #   bash scripts/restore-db.sh backups/db/cocodems-20260708-120000.sql.gz --yes
-#   bash scripts/restore-db.sh s3://my-bucket/cocodems/db/cocodems-20260708-120000.sql.gz --yes
+#   bash scripts/restore-db.sh s3://my-bucket/cocodems/db/daily/cocodems-20260708-120000.sql.gz --yes
+#   bash scripts/restore-db.sh s3://my-bucket/cocodems/db/monthly/cocodems-2026-07-01.sql.gz --yes
 #
 # WARNING: replaces the current database contents.
 

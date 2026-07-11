@@ -242,7 +242,7 @@ If `cv upgrade:db` fails with `Permission denied` on `/var/www/.cv/upgrade`, pul
 
 ## Database backup and restore
 
-Backups use `mysqldump` from the MariaDB container. Dumps are stored under `backups/db/` on the server (gitignored).
+Backups use `mysqldump` from the MariaDB container.
 
 **Prerequisites**
 
@@ -262,16 +262,42 @@ BACKUP_S3_BUCKET=cocodems-staging-columbia-backups-UNIQUE-SUFFIX
 
 The EC2 instance profile already has S3 write access to that bucket (Terraform `iam-ec2-role` module).
 
+**S3 layout and retention**
+
+| Prefix | Contents | Retention (Terraform lifecycle) |
+|--------|----------|----------------------------------|
+| `cocodems/db/daily/` | Every backup | **30 days** |
+| `cocodems/db/monthly/` | Extra copy on the **1st of each month** (UTC) | **365 days** |
+
+Older backups at `cocodems/db/cocodems-*.sql.gz` (legacy path) expire after 30 days.
+
+Apply lifecycle rules after pulling Terraform changes:
+
+```bash
+cd infra/terraform/environments/staging
+terraform plan   # expect s3-backups lifecycle update
+terraform apply
+```
+
 **Backup** (on the staging server):
 
 ```bash
 cd /opt/cocodems-crm
 
-# Local file only
+# Local file only (saved under backups/db/)
 bash scripts/backup-db.sh
 
-# Also upload to the Terraform S3 backup bucket
+# Upload to S3; local copy removed after upload (cron default)
 bash scripts/backup-db.sh --upload
+
+# Upload and keep a copy in backups/db/
+bash scripts/backup-db.sh --upload --keep-local
+```
+
+Scheduled cron uses `--upload` without `--keep-local` (writes to `/tmp`, uploads, deletes). It does **not** fill `backups/db/` on disk. Remove any old local files from before this change:
+
+```bash
+rm -f /opt/cocodems-crm/backups/db/*.sql.gz
 ```
 
 **Restore** (destructive — replaces the current database):
@@ -282,8 +308,11 @@ bash scripts/restore-db.sh backups/db/cocodems-YYYYMMDD-HHMMSS.sql.gz
 # or skip the prompt:
 bash scripts/restore-db.sh backups/db/cocodems-YYYYMMDD-HHMMSS.sql.gz --yes
 
-# From S3:
-bash scripts/restore-db.sh s3://BUCKET/cocodems/db/cocodems-YYYYMMDD-HHMMSS.sql.gz --yes
+# From S3 (recent daily backup):
+bash scripts/restore-db.sh s3://BUCKET/cocodems/db/daily/cocodems-YYYYMMDD-HHMMSS.sql.gz --yes
+
+# From S3 (monthly snapshot, 1st of month):
+bash scripts/restore-db.sh s3://BUCKET/cocodems/db/monthly/cocodems-YYYY-MM-01.sql.gz --yes
 ```
 
 After restore, verify WordPress login and CiviCRM **Administer → System Status**. The restore script runs `cv flush` when CiviCRM is available.

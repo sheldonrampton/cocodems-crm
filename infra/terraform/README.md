@@ -92,7 +92,7 @@ Secrets (database passwords, API keys) are **not** stored in Terraform. They bel
 | Security groups | HTTP/HTTPS (and optional SSH) |
 | EC2 instance (Ubuntu 22.04) | Runs Docker / WordPress / CiviCRM (configured by deploy scripts) |
 | Elastic IP | Stable address for external DNS |
-| S3 backup bucket | Off-site database and file backups |
+| S3 backup bucket | Off-site database backups (`daily/` 30d, `monthly/` 365d lifecycle) |
 | IAM instance profile | SSM Session Manager + S3 backup access |
 
 Terraform does **not** install WordPress or CiviCRM — that is a separate deployment step (Phase 1 milestone).

@@ -2,13 +2,16 @@
 # Backup the MariaDB database (WordPress + CiviCRM).
 #
 #   bash scripts/backup-db.sh
-#   bash scripts/backup-db.sh --upload    # also copy to S3 (BACKUP_S3_BUCKET in .env)
+#   bash scripts/backup-db.sh --upload
+#   bash scripts/backup-db.sh --upload --keep-local
 #
-# Staging:
-#   cd /opt/cocodems-crm && bash scripts/backup-db.sh --upload
+# Staging cron uploads to S3 and does not keep a local copy (uses /tmp only).
 #
-# Backups are written to backups/db/ (gitignored). Set BACKUP_S3_BUCKET from
-# `terraform output -raw backup_bucket_name` in infra/terraform/environments/staging.
+# S3 layout (when --upload):
+#   cocodems/db/daily/   — every backup; lifecycle expires after 30 days
+#   cocodems/db/monthly/ — additional copy on the 1st UTC; kept 365 days
+#
+# Set BACKUP_S3_BUCKET from `terraform output -raw backup_bucket_name`.
 
 set -euo pipefail
 
@@ -17,12 +20,15 @@ cd "${REPO_ROOT}"
 
 ENV_FILE="${REPO_ROOT}/.env"
 UPLOAD=0
+KEEP_LOCAL=0
 
 usage() {
 	cat <<'EOF'
-Usage: backup-db.sh [--upload]
+Usage: backup-db.sh [--upload] [--keep-local]
 
-  --upload   Copy the dump to s3://BACKUP_S3_BUCKET/cocodems/db/ after writing locally
+  --upload       Upload to S3 (requires BACKUP_S3_BUCKET in .env)
+  --keep-local   With --upload, keep the .sql.gz on disk after upload
+                 (default: remove local copy after a successful upload)
 EOF
 }
 
@@ -30,6 +36,10 @@ while [[ $# -gt 0 ]]; do
 	case "$1" in
 		--upload)
 			UPLOAD=1
+			shift
+			;;
+		--keep-local)
+			KEEP_LOCAL=1
 			shift
 			;;
 		-h | --help)
@@ -76,19 +86,26 @@ if ! ${COMPOSE} exec -T mariadb true 2>/dev/null; then
 	exit 1
 fi
 
+TIMESTAMP="$(date -u +%Y%m%d-%H%M%S)"
 BACKUP_DIR="${REPO_ROOT}/backups/db"
-mkdir -p "${BACKUP_DIR}" 2>/dev/null || true
-if [[ ! -d "${BACKUP_DIR}" ]] || [[ ! -w "${BACKUP_DIR}" ]]; then
-	echo "Cannot write to ${BACKUP_DIR} (run as $(whoami))." >&2
-	echo "On staging: sudo bash scripts/setup-staging-backup-cron.sh" >&2
-	echo "Or: sudo chown -R ubuntu:ubuntu ${REPO_ROOT}/backups" >&2
-	exit 1
+REMOVE_AFTER_UPLOAD=0
+
+if [[ ${UPLOAD} -eq 1 && ${KEEP_LOCAL} -eq 0 ]]; then
+	BACKUP_FILE="$(mktemp "${TMPDIR:-/tmp}/cocodems-backup.XXXXXX.sql.gz")"
+	REMOVE_AFTER_UPLOAD=1
+	echo "==> Dumping ${MYSQL_DATABASE} to temporary file..."
+else
+	mkdir -p "${BACKUP_DIR}" 2>/dev/null || true
+	if [[ ! -d "${BACKUP_DIR}" ]] || [[ ! -w "${BACKUP_DIR}" ]]; then
+		echo "Cannot write to ${BACKUP_DIR} (run as $(whoami))." >&2
+		echo "On staging: sudo bash scripts/setup-staging-backup-cron.sh" >&2
+		echo "Or: sudo chown -R ubuntu:ubuntu ${REPO_ROOT}/backups" >&2
+		exit 1
+	fi
+	BACKUP_FILE="${BACKUP_DIR}/${MYSQL_DATABASE}-${TIMESTAMP}.sql.gz"
+	echo "==> Dumping ${MYSQL_DATABASE} to ${BACKUP_FILE}..."
 fi
 
-TIMESTAMP="$(date -u +%Y%m%d-%H%M%S)"
-BACKUP_FILE="${BACKUP_DIR}/${MYSQL_DATABASE}-${TIMESTAMP}.sql.gz"
-
-echo "==> Dumping ${MYSQL_DATABASE} to ${BACKUP_FILE}..."
 ${COMPOSE} exec -T mariadb sh -ec '
 	mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" \
 		--single-transaction \
@@ -102,7 +119,6 @@ echo "Backup size: $(du -h "${BACKUP_FILE}" | awk '{print $1}')"
 if [[ ${UPLOAD} -eq 1 ]]; then
 	if [[ -z "${BACKUP_S3_BUCKET}" ]]; then
 		echo "Set BACKUP_S3_BUCKET in ${ENV_FILE} to upload backups." >&2
-		echo "Staging: terraform output -raw backup_bucket_name (in environments/staging)" >&2
 		exit 1
 	fi
 	if ! command -v aws >/dev/null 2>&1; then
@@ -110,11 +126,27 @@ if [[ ${UPLOAD} -eq 1 ]]; then
 		exit 1
 	fi
 
-	S3_KEY="cocodems/db/${MYSQL_DATABASE}-${TIMESTAMP}.sql.gz"
-	echo "==> Uploading to s3://${BACKUP_S3_BUCKET}/${S3_KEY}..."
-	aws s3 cp "${BACKUP_FILE}" "s3://${BACKUP_S3_BUCKET}/${S3_KEY}"
-	echo "Uploaded: s3://${BACKUP_S3_BUCKET}/${S3_KEY}"
+	DAILY_KEY="cocodems/db/daily/${MYSQL_DATABASE}-${TIMESTAMP}.sql.gz"
+	echo "==> Uploading to s3://${BACKUP_S3_BUCKET}/${DAILY_KEY}..."
+	aws s3 cp "${BACKUP_FILE}" "s3://${BACKUP_S3_BUCKET}/${DAILY_KEY}"
+	echo "Uploaded: s3://${BACKUP_S3_BUCKET}/${DAILY_KEY}"
+
+	if [[ "$(date -u +%d)" == "01" ]]; then
+		MONTHLY_KEY="cocodems/db/monthly/${MYSQL_DATABASE}-$(date -u +%Y-%m)-01.sql.gz"
+		echo "==> Uploading monthly snapshot to s3://${BACKUP_S3_BUCKET}/${MONTHLY_KEY}..."
+		aws s3 cp "${BACKUP_FILE}" "s3://${BACKUP_S3_BUCKET}/${MONTHLY_KEY}"
+		echo "Uploaded: s3://${BACKUP_S3_BUCKET}/${MONTHLY_KEY}"
+	fi
+
+	if [[ ${REMOVE_AFTER_UPLOAD} -eq 1 ]]; then
+		rm -f "${BACKUP_FILE}"
+		echo "Removed local copy after upload."
+	fi
 fi
 
 echo ""
-echo "Backup complete: ${BACKUP_FILE}"
+if [[ ${REMOVE_AFTER_UPLOAD} -eq 1 ]]; then
+	echo "Backup complete (S3 only)."
+else
+	echo "Backup complete: ${BACKUP_FILE}"
+fi
