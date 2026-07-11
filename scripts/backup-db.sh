@@ -77,7 +77,13 @@ if ! ${COMPOSE} exec -T mariadb true 2>/dev/null; then
 fi
 
 BACKUP_DIR="${REPO_ROOT}/backups/db"
-mkdir -p "${BACKUP_DIR}"
+mkdir -p "${BACKUP_DIR}" 2>/dev/null || true
+if [[ ! -d "${BACKUP_DIR}" ]] || [[ ! -w "${BACKUP_DIR}" ]]; then
+	echo "Cannot write to ${BACKUP_DIR} (run as $(whoami))." >&2
+	echo "On staging: sudo bash scripts/setup-staging-backup-cron.sh" >&2
+	echo "Or: sudo chown -R ubuntu:ubuntu ${REPO_ROOT}/backups" >&2
+	exit 1
+fi
 
 TIMESTAMP="$(date -u +%Y%m%d-%H%M%S)"
 BACKUP_FILE="${BACKUP_DIR}/${MYSQL_DATABASE}-${TIMESTAMP}.sql.gz"

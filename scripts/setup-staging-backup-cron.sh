@@ -118,6 +118,11 @@ touch "${LOG_FILE}"
 chown "${CRON_USER}:${CRON_USER}" "${LOG_FILE}"
 chmod 640 "${LOG_FILE}"
 
+BACKUP_DIR="${REPO_ROOT}/backups/db"
+mkdir -p "${BACKUP_DIR}"
+chown -R "${CRON_USER}:${CRON_USER}" "${REPO_ROOT}/backups"
+chmod 750 "${REPO_ROOT}/backups" "${BACKUP_DIR}"
+
 cat >"${CRON_FILE}" <<EOF
 # CoCoDems CRM — daily MariaDB backup to S3 (installed by setup-staging-backup-cron.sh)
 SHELL=/bin/bash
