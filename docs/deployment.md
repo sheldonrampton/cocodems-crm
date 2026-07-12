@@ -452,3 +452,15 @@ Inspect a checkbox in DevTools: if the `checked` attribute changes on click but 
 # Production
 
 Production uses the same single-EC2 pattern (no load balancer). `environments/production` Terraform and production deploy scripts are planned for Phase 6. TLS on production will also use Certbot on the instance unless the architecture changes.
+
+## Cross-environment database sync (planned — Phase 6)
+
+Not part of Phase 1. Requires production infrastructure, backup/restore on both environments, and operator runbooks. Planned scripts ([roadmap.md](roadmap.md)):
+
+| Script | Direction | Use case |
+|--------|-----------|----------|
+| `sync-staging-to-production.sh` | Staging → production | Promote data changes reviewed on staging |
+| `sync-production-to-staging.sh` | Production → staging | Full copy for debugging or pre-release testing |
+| `sync-production-to-staging-sanitized.sh` | Production → staging | Redact PII/sensitive fields for demos or external reviewers |
+
+Staging is not required to remain sanitized. Choose the sync that matches the task (e.g. edit on staging, then promote; or refresh staging from production when needed).

@@ -1,6 +1,6 @@
 # Roadmap
 
-**Version:** 0.3 (Draft)
+**Version:** 0.4 (Draft)
 
 This document outlines prioritized milestones from the initial prototype through a production-ready platform. Milestones are ordered by dependency and value — later items assume earlier ones are substantially complete.
 
@@ -33,10 +33,11 @@ Staging is deployed early (Phase 1) so the Communications Committee can review a
 | P0 | Terraform baseline | Staging environment defined in `infra/terraform/environments/staging` |
 | P0 | Staging deployment | WordPress + CiviCRM running on staging; automated deploy from `main` or a staging branch |
 | P0 | Staging access | Committee members can log in via WordPress and browse CiviCRM; HTTP basic auth is optional and not used by default (see [deployment.md](deployment.md)) |
-| P0 | Staging data policy | Safe for experimentation: fake email delivery (no mail to real inboxes); no production API keys for external integrations; sample or empty data until import phases; sanitized production copies allowed later (see P2) |
+| P0 | Staging data policy | Safe for experimentation: fake email delivery (no mail to real inboxes); no production API keys for external integrations; sample or empty data until import phases; staging may hold full or sanitized production copies when sync scripts exist (Phase 6) |
 | P1 | CI pipeline | GitHub Actions run linting and basic tests on every pull request — see `.github/workflows/ci.yml` |
-| P1 | Database backup/restore | `backup-db.sh` and `restore-db.sh` — see [deployment.md](deployment.md#database-backup-and-restore) |
-| P2 | Production-to-staging sync | `sync-production-to-staging.sh` refreshes staging with sanitized production data (when production exists) |
+| P1 | Database backup/restore | `backup-db.sh`, `restore-db.sh`, and scheduled S3 backups — see [deployment.md](deployment.md#database-backup-and-restore) |
+
+Phase 1 staging infrastructure is **complete** when the above milestones are met. Cross-environment database sync is deferred until production exists ([Phase 6](#phase-6--production-launch)).
 
 ---
 
@@ -117,6 +118,7 @@ Integration work should follow the principle in [architecture.md](architecture.m
 | P1 | Security hardening | Security updates automated; audit logging enabled; strong password policy |
 | P1 | Production deployment | Manual or gated deploy workflow with rollback procedure |
 | P1 | Operator runbook | `deployment.md` covers deploy, rollback, backup restore, and incident response |
+| P1 | Cross-environment data sync | Operator scripts (after production is live): `sync-staging-to-production.sh` (promote reviewed staging changes); `sync-production-to-staging.sh` (full production copy to staging); `sync-production-to-staging-sanitized.sh` (sanitized copy for demos/training). Staging is not required to stay sanitized — use the script that matches the workflow. |
 | P2 | Incremental adoption | At least one committee actively using CRM instead of spreadsheets |
 | P2 | Email delivery | CiviCRM mailings or integrated provider sending production email |
 

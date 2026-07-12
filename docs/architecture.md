@@ -297,7 +297,7 @@ Characteristics:
 * single EC2 instance (no load balancer)
 * TLS via Certbot on the instance
 * **access control** via WordPress and CiviCRM roles and permissions; optional HTTP basic auth (`scripts/setup-staging-auth.sh`) is available but not used by default, to keep committee review simple
-* **data** — sample or empty data during early demos; later, a sanitized copy of production may be loaded for feature testing (see [roadmap.md](roadmap.md) Phase 1 P2 sync milestone)
+* **data** — sample or empty data during early demos; may later hold a full production copy, a sanitized copy, or staging-only edits promoted to production via sync scripts ([roadmap.md](roadmap.md) Phase 6). Staging does not need to stay permanently sanitized.
 * **fake email delivery** — outbound mail must not reach real inboxes, even if contact records contain real addresses (configure CiviCRM/WordPress mail accordingly)
 * **no production API keys** — do not configure staging with credentials for external services (Action Network, payment processors, production SMTP, etc.) that could affect live systems; use sandbox or test keys, or leave integrations disabled until deliberately configured
 * safe for development
