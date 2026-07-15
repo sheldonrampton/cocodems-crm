@@ -95,7 +95,10 @@ ${COMPOSE} cp "${MANIFEST}" php:/tmp/cocodems-versions.json
 ${COMPOSE} exec -T php bash -c '
 set -euo pipefail
 cd /var/www/html/wp-content
+# Use 755 for the staging dir so packaging "./" does not bake mode 0700 into the archive
+# (that would break local wp-content permissions on extract).
 TMP=$(mktemp -d)
+chmod 755 "$TMP"
 mkdir -p "$TMP/plugins" "$TMP/uploads/civicrm"
 cp /tmp/cocodems-versions.json "$TMP/versions.json"
 if [ -d plugins ]; then
