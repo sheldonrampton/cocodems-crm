@@ -36,8 +36,9 @@ Staging is deployed early (Phase 1) so the Communications Committee can review a
 | P0 | Staging data policy | Safe for experimentation: fake email delivery (no mail to real inboxes); no production API keys for external integrations; sample or empty data until import phases; staging may hold full or sanitized production copies when sync scripts exist (Phase 6) |
 | P1 | CI pipeline | GitHub Actions run linting and basic tests on every pull request — see `.github/workflows/ci.yml` |
 | P1 | Database backup/restore | `backup-db.sh`, `restore-db.sh`, and scheduled S3 backups — see [deployment.md](deployment.md#database-backup-and-restore) |
+| P2 | Staging → local sync | `sync-staging-to-local.sh` and `rebuild-local-from-staging.sh` — see [docker/README.md](../docker/README.md#blow-away-and-rebuild-local-from-staging) |
 
-Phase 1 staging infrastructure is **complete** when the above milestones are met. Cross-environment database sync is deferred until production exists ([Phase 6](#phase-6--production-launch)).
+Phase 1 staging infrastructure is **complete** for the P0/P1 rows above. Cross-environment sync **involving production** is deferred until production exists ([Phase 6](#phase-6--production-launch)).
 
 ---
 

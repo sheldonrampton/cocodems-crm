@@ -152,6 +152,65 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 bash scripts/upgrade-civicrm.sh
 ```
 
+## Sync staging database → local
+
+Use a staging backup so you can experiment locally (third-party CiviCRM extensions, WordPress plugins, custom code) without touching staging data.
+
+1. Ensure the local stack is running and `.env` is local-style (`CIVICRM_UF_BASEURL=http://localhost:8080`, **no** `SITE_DOMAIN`).
+2. Set `BACKUP_S3_BUCKET` in `.env` to the staging backup bucket (`terraform output -raw backup_bucket_name`).
+3. Configure AWS CLI on your laptop with credentials that can **read** that bucket.
+4. Run:
+
+```bash
+bash scripts/sync-staging-to-local.sh
+```
+
+Or restore a specific dump:
+
+```bash
+bash scripts/sync-staging-to-local.sh --from s3://BUCKET/cocodems/db/daily/cocodems-YYYYMMDD-HHMMSS.sql.gz
+bash scripts/sync-staging-to-local.sh --from backups/db/cocodems-YYYYMMDD-HHMMSS.sql.gz --yes
+```
+
+The script restores the DB, sets WordPress `home`/`siteurl` to your local URL, aligns DB credentials with local `.env`, resets `admin` to `CIVICRM_ADMIN_PASS`, and runs `fix-civicrm-urls.sh`.
+
+**Notes**
+
+* **Destructive for local only** — replaces the local MariaDB database.
+* After sync, WordPress user `admin` is reset to `CIVICRM_ADMIN_PASS` from local `.env`, and DB credentials in `wp-config.php` / `civicrm.settings.php` are aligned with local `MYSQL_*`.
+* **Database only** — uploads, CiviCRM extensions under `uploads/civicrm/ext`, and plugins installed only on staging are not copied. Install those locally after sync when you need them.
+* Staging outbound mail policy in the DB still applies; keep local experimentation safe (do not point at production SMTP).
+
+**`Access denied for user 'root'` during restore**
+
+MariaDB only applies `MYSQL_ROOT_PASSWORD` when the data volume is first created. If you changed `.env` later, recreate the local DB volume, then sync again:
+
+```bash
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml rm -f -s mariadb
+docker volume rm cocodems-crm_mariadb_data
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up -d
+bash scripts/sync-staging-to-local.sh
+```
+
+## Blow away and rebuild local from staging
+
+For a disposable local clone that matches staging versions, plugins, extensions, and database:
+
+```bash
+# One-time on staging (or use --refresh-files below):
+#   bash scripts/backup-staging-files.sh --upload
+
+# In local .env set BACKUP_S3_BUCKET and optionally:
+#   STAGING_EC2_INSTANCE_ID=i-...
+#   AWS_REGION=us-east-2
+
+bash scripts/rebuild-local-from-staging.sh --yes
+# Or refresh the files archive from staging first:
+bash scripts/rebuild-local-from-staging.sh --yes --refresh-files
+```
+
+This runs `docker compose ... down -v`, rebuilds the PHP image with staging’s WordPress/CiviCRM versions, restores the latest daily DB, and extracts staging plugins plus CiviCRM `ext`/`custom`/`persist`. `cocodems-custom` and `cocodems-theme` still come from your git bind mounts.
+
 ## Production
 
 This Compose file is for **local development only**. Production deployment uses Terraform on AWS EC2 — see [architecture.md](../docs/architecture.md) and [ADR-0004](../docs/adr/0004-aws-ec2.md).

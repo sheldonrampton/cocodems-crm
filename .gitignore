@@ -103,6 +103,7 @@ coverage/
 .phpunit.result.cache
 .phpunit.cache
 .phpcs-cache
+cocodems_elections.json
 
 # --- Logs ---
 

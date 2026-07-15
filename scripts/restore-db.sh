@@ -122,7 +122,22 @@ if [[ ${FORCE} -ne 1 ]]; then
 fi
 
 echo "==> Restoring ${BACKUP_PATH}..."
-gunzip -c "${RESTORE_FILE}" | ${COMPOSE} exec -T mariadb sh -ec 'mysql -u root -p"$MYSQL_ROOT_PASSWORD"'
+# Pass the password explicitly — do not rely on the container env alone. MariaDB only
+# applies MYSQL_ROOT_PASSWORD when the data volume is first created; if .env changed
+# later, the container env and the real root password can diverge.
+if ! gunzip -c "${RESTORE_FILE}" \
+	| ${COMPOSE} exec -T -e "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}" mariadb \
+		sh -ec 'mysql -u root -p"$MYSQL_ROOT_PASSWORD"'; then
+	echo "" >&2
+	echo "Restore failed. If you see Access denied for root, the MariaDB volume was" >&2
+	echo "likely initialized with a different MYSQL_ROOT_PASSWORD than ${ENV_FILE}." >&2
+	echo "Local recovery (keeps WordPress files; wipes local DB only):" >&2
+	echo "  docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml stop mariadb" >&2
+	echo "  docker volume rm cocodems-crm_mariadb_data" >&2
+	echo "  docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up -d" >&2
+	echo "  Then re-run the restore/sync." >&2
+	exit 1
+fi
 
 echo "==> Flushing CiviCRM caches (if available)..."
 ${COMPOSE} exec -T -u www-data -e XDG_STATE_HOME=/var/www/private/.cv-state php cv flush 2>/dev/null || true

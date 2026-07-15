@@ -3,7 +3,9 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-if [[ -f "${REPO_ROOT}/docker/docker-compose.staging.yml" ]]; then
+ENV_FILE="${REPO_ROOT}/.env"
+if [[ -f "${REPO_ROOT}/docker/docker-compose.staging.yml" ]] \
+	&& [[ -f "${ENV_FILE}" ]] && grep -q '^SITE_DOMAIN=' "${ENV_FILE}" 2>/dev/null; then
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.staging.yml"
 else
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.local.yml"
