@@ -211,6 +211,21 @@ bash scripts/rebuild-local-from-staging.sh --yes --refresh-files
 
 This runs `docker compose ... down -v`, rebuilds the PHP image with staging’s WordPress/CiviCRM versions, restores the latest daily DB, and extracts staging plugins plus CiviCRM `ext`/`custom`/`persist`. `cocodems-custom` and `cocodems-theme` still come from your git bind mounts.
 
+**“Plugin file does not exist” / empty Plugins page after rebuild**
+
+Usually `wp-content` became mode `0700` owned by root when extracting an older files archive (packed from a restrictive temp directory). Refresh the archive and rebuild, or fix permissions:
+
+```bash
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml \
+  exec -T php chown -R www-data:www-data /var/www/html/wp-content
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml \
+  exec -T php chmod 755 /var/www/html/wp-content
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml \
+  exec -T php wp plugin activate civicrm cocodems-custom --allow-root --path=/var/www/html
+```
+
+Then re-upload a fixed files archive from staging (`bash scripts/backup-staging-files.sh --upload`) so future rebuilds do not reintroduce the problem.
+
 ## Production
 
 This Compose file is for **local development only**. Production deployment uses Terraform on AWS EC2 — see [architecture.md](../docs/architecture.md) and [ADR-0004](../docs/adr/0004-aws-ec2.md).

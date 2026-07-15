@@ -243,16 +243,32 @@ if [[ ${SKIP_FILES} -eq 0 ]]; then
 	${COMPOSE} cp "${TMP_TAR}" php:/tmp/staging-files.tar.gz
 	${COMPOSE} exec -T php bash -c '
 set -euo pipefail
-cd /var/www/html/wp-content
-tar -xzf /tmp/staging-files.tar.gz
-rm -f /tmp/staging-files.tar.gz versions.json
-chown -R www-data:www-data plugins uploads/civicrm 2>/dev/null || true
+# Extract into a temp dir, then merge. Never untar onto wp-content directly —
+# archives store "./" as mode 0700 (from mktemp), which makes wp-content
+# unreadable to www-data and causes "Plugin file does not exist".
+EXTRACT=$(mktemp -d)
+tar -xzf /tmp/staging-files.tar.gz -C "$EXTRACT"
+rm -f /tmp/staging-files.tar.gz "$EXTRACT/versions.json"
+mkdir -p /var/www/html/wp-content/plugins /var/www/html/wp-content/uploads/civicrm
+if [ -d "$EXTRACT/plugins" ]; then
+  cp -a "$EXTRACT/plugins"/. /var/www/html/wp-content/plugins/
+fi
+if [ -d "$EXTRACT/uploads/civicrm" ]; then
+  cp -a "$EXTRACT/uploads/civicrm"/. /var/www/html/wp-content/uploads/civicrm/
+fi
+rm -rf "$EXTRACT"
+chown -R www-data:www-data /var/www/html/wp-content
+find /var/www/html/wp-content -type d -exec chmod 755 {} \;
+chmod -R u+rwX,g+rwX /var/www/html/wp-content/uploads/civicrm
 '
 	rm -f "${TMP_TAR}"
 fi
 
 echo "==> Ensuring CiviCRM plugin matches image and DB is upgraded if needed..."
 bash "${REPO_ROOT}/scripts/upgrade-civicrm.sh" || true
+
+echo "==> Activating core plugins..."
+${COMPOSE} exec -T php wp plugin activate civicrm cocodems-custom --allow-root --path=/var/www/html
 
 echo "==> Flushing caches..."
 ${COMPOSE} exec -T -u www-data -e XDG_STATE_HOME=/var/www/private/.cv-state php cv flush 2>/dev/null || true
