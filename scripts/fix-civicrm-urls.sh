@@ -36,7 +36,8 @@ fi
 RESOURCE_URL="${BASE_URL}wp-content/plugins/civicrm/civicrm/"
 FILES_URL="${BASE_URL}wp-content/uploads/civicrm/"
 
-if [[ -f "${REPO_ROOT}/docker/docker-compose.staging.yml" ]]; then
+if [[ -f "${REPO_ROOT}/docker/docker-compose.staging.yml" ]] \
+	&& grep -q '^SITE_DOMAIN=' "${ENV_FILE}" 2>/dev/null; then
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.staging.yml"
 else
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.local.yml"

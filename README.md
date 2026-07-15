@@ -17,6 +17,13 @@ Log in at **http://localhost:8080/wp-login.php** using `CIVICRM_ADMIN_USER` and 
 
 See [docker/README.md](docker/README.md) for details, troubleshooting, and common commands.
 
+To refresh your **local** database from the latest staging backup (experiment with extensions/plugins safely):
+
+```bash
+# Requires BACKUP_S3_BUCKET in .env and AWS CLI read access to the bucket
+bash scripts/sync-staging-to-local.sh
+```
+
 ## Continuous integration
 
 Pull requests run [GitHub Actions](.github/workflows/ci.yml): PHP lint (PHPCS), PHPUnit, ShellCheck, Terraform format/validate, and Docker Compose config checks.
@@ -169,7 +176,10 @@ cocodems-crm/
 │   ├── backup-db.sh               # MariaDB dump (optional S3 upload)
 │   ├── restore-db.sh              # Restore from local file or s3://
 │   ├── cron-backup-db.sh          # Cron entrypoint (docker group wrapper)
-│   └── setup-staging-backup-cron.sh
+│   ├── setup-staging-backup-cron.sh
+│   ├── sync-staging-to-local.sh   # Pull staging DB into local Docker
+│   ├── backup-staging-files.sh    # Pack staging plugins/ext → S3
+│   └── rebuild-local-from-staging.sh  # Wipe local volumes; match staging
 │
 ├── backups/                       # Local backup storage (gitignored)
 │
