@@ -5,3 +5,19 @@ services:
   nginx:
     ports:
       - "${HTTP_PORT:-8080}:80"
+
+  # CiviCRM System Status fetches CIVICRM_UF_BASEURL (http://localhost:PORT)
+  # from inside PHP. There localhost is 127.0.0.1 in this container — not the
+  # host-published Nginx port. Share PHP's network namespace and forward
+  # 127.0.0.1:HTTP_PORT → nginx:80 so those self-checks succeed.
+  local-baseurl-proxy:
+    image: alpine/socat:1.8.0.0
+    container_name: cocodems-local-baseurl-proxy
+    network_mode: "service:php"
+    command:
+      - "TCP-LISTEN:${HTTP_PORT:-8080},bind=127.0.0.1,fork,reuseaddr"
+      - "TCP:nginx:80"
+    depends_on:
+      - php
+      - nginx
+    restart: unless-stopped
