@@ -10,14 +10,26 @@ services:
   # from inside PHP. There localhost is 127.0.0.1 in this container — not the
   # host-published Nginx port. Share PHP's network namespace and forward
   # 127.0.0.1:HTTP_PORT → nginx:80 so those self-checks succeed.
+  #
+  # network_mode: service:php joins PHP's netns (including Docker DNS at
+  # 127.0.0.11), so Compose service names like "nginx" still resolve.
+  #
+  # socat fork mode only listens at startup; each client request opens a new
+  # connection to nginx:80. Wait for nginx healthy so early probes (and DNS
+  # for the "nginx" service name) are ready before the proxy is marked up.
+  #
+  # Use alpine/socat >= 1.8.0.1 and TCP4-LISTEN: 1.8.0.0 had regressions with
+  # TCP-LISTEN + bind=IPv4 (fixed upstream Aug 2024).
   local-baseurl-proxy:
-    image: alpine/socat:1.8.0.0
+    image: alpine/socat:1.8.0.1
     container_name: cocodems-local-baseurl-proxy
     network_mode: "service:php"
     command:
-      - "TCP-LISTEN:${HTTP_PORT:-8080},bind=127.0.0.1,fork,reuseaddr"
-      - "TCP:nginx:80"
+      - "TCP4-LISTEN:${HTTP_PORT:-8080},bind=127.0.0.1,fork,reuseaddr"
+      - "TCP4:nginx:80"
     depends_on:
-      - php
-      - nginx
+      php:
+        condition: service_started
+      nginx:
+        condition: service_healthy
     restart: unless-stopped
