@@ -28,6 +28,9 @@ bash scripts/sync-staging-civicrm-to-local.sh
 
 # Push local WordPress (not CiviCRM) to staging via S3 + SSM
 bash scripts/sync-local-wordpress-to-staging.sh --yes
+
+# Safety copy of staging before a risky push (S3 snapshot; restore if needed)
+bash scripts/staging-snapshot.sh create pre-test
 ```
 
 ## Continuous integration
@@ -187,6 +190,9 @@ cocodems-crm/
 │   ├── sync-staging-civicrm-to-local.sh  # CiviCRM tables only (keep WP)
 │   ├── sync-local-wordpress-to-staging.sh  # WP only → staging via S3+SSM
 │   ├── apply-local-wordpress-on-staging.sh # Staging-side apply (SSM)
+│   ├── staging-snapshot.sh        # Create/list/restore/delete staging S3 safety copies
+│   ├── create-staging-snapshot-on-server.sh
+│   ├── restore-staging-snapshot-on-server.sh
 │   ├── backup-staging-files.sh    # Pack staging plugins/ext → S3
 │   └── rebuild-local-from-staging.sh  # Wipe local volumes; match staging
 │

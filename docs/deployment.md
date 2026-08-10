@@ -481,6 +481,34 @@ bash scripts/sync-local-wordpress-to-staging.sh --yes
 
 See [docker/README.md](../docker/README.md#sync-local-wordpress--staging-civicrm-unchanged).
 
+## Staging safety snapshots (before risky tests)
+
+Before running a script that can damage live staging (for example `sync-local-wordpress-to-staging.sh`), take a **named** S3 snapshot of staging’s full database plus plugins/themes/CiviCRM files. If the test goes wrong, restore staging from that snapshot. When finished, delete it.
+
+From your **laptop** (local `.env` with `BACKUP_S3_BUCKET`, `STAGING_EC2_INSTANCE_ID`, `AWS_REGION`):
+
+```bash
+# 1. Freeze staging
+bash scripts/staging-snapshot.sh create pre-wp-push
+
+# 2. Run the risky operation
+bash scripts/sync-local-wordpress-to-staging.sh --yes
+
+# 3a. Success — drop the temporary copy
+bash scripts/staging-snapshot.sh delete pre-wp-push --yes
+
+# 3b. Failure — put staging back
+bash scripts/staging-snapshot.sh restore pre-wp-push --yes
+# then optionally delete the snapshot when done
+
+bash scripts/staging-snapshot.sh list
+bash scripts/staging-snapshot.sh show pre-wp-push
+```
+
+Snapshots are stored at `s3://BACKUP_S3_BUCKET/cocodems/snapshots/<name>/` (`database.sql.gz`, `files.tar.gz`, `manifest.json`). Create/restore run on the instance via SSM (`create-staging-snapshot-on-server.sh` / `restore-staging-snapshot-on-server.sh`). Staging must already have those scripts in `/opt/cocodems-crm` (`git pull` is attempted first).
+
+This is a **recoverable copy**, not a second live site. It does not spin up another EC2 instance.
+
 ## Cross-environment sync involving production (planned — Phase 6)
 
 Requires production infrastructure. Planned scripts ([roadmap.md](roadmap.md)):

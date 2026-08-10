@@ -193,6 +193,22 @@ This packages `wp_*` tables plus `plugins/` (except `civicrm`) and `themes/`, up
 * Does not push `uploads/` media or the CiviCRM plugin tree — keep those on staging or deploy CiviCRM via the staging upgrade path.
 * Confirm on staging: contact counts should be unchanged after the run.
 
+**Safety net:** before pushing, take a snapshot and restore if needed — see [Staging safety snapshots](#staging-safety-snapshots).
+
+## Staging safety snapshots
+
+Named full-DB + files copy of live staging in S3 so you can try risky scripts and roll back.
+
+```bash
+bash scripts/staging-snapshot.sh create pre-test
+# … run test against staging …
+bash scripts/staging-snapshot.sh restore pre-test --yes   # if bad
+bash scripts/staging-snapshot.sh delete pre-test --yes    # when done
+bash scripts/staging-snapshot.sh list
+```
+
+Requires `BACKUP_S3_BUCKET`, `STAGING_EC2_INSTANCE_ID`, `AWS_REGION`. Details: [deployment.md](../docs/deployment.md#staging-safety-snapshots-before-risky-tests).
+
 ## Sync staging database → local
 
 Use a staging backup so you can experiment locally (third-party CiviCRM extensions, WordPress plugins, custom code) without touching staging data.
