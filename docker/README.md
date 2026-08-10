@@ -100,6 +100,14 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 
 ## Troubleshooting
 
+**CiviCRM System Status: “Guzzle client error / Could not load a clean page”**
+
+CiviCRM probes `CIVICRM_UF_BASEURL` from inside the PHP container. Local compose includes a small `local-baseurl-proxy` service so `http://localhost:8080` resolves to Nginx. Recreate it if you see this after an upgrade:
+
+```bash
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up -d
+```
+
 **`/wp-admin` redirects to `http://localhost/wp-admin/` (missing port)**
 
 Use **http://localhost:8080/wp-login.php** instead. If your browser cached the bad redirect, try a private window or hard refresh (Cmd+Shift+R).

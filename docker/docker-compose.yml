@@ -8,6 +8,14 @@ services:
     depends_on:
       php:
         condition: service_started
+    healthcheck:
+      # Do not follow redirects: WordPress may 301 to host:HTTP_PORT, which is
+      # not published inside this container. A 301/200 from nginx is enough.
+      test: ["CMD", "curl", "-fsI", "http://127.0.0.1/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
     restart: unless-stopped
 
   php:
