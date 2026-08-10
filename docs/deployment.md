@@ -464,6 +464,14 @@ bash scripts/sync-staging-to-local.sh
 
 See [docker/README.md](../docker/README.md#sync-staging-database--local) for prerequisites and caveats (DB only; admin password comes from staging).
 
+**CiviCRM only** (keep local WordPress content and config):
+
+```bash
+bash scripts/sync-staging-civicrm-to-local.sh
+```
+
+See [docker/README.md](../docker/README.md#sync-staging-civicrm-data--local-wordpress-unchanged).
+
 ## Cross-environment sync involving production (planned — Phase 6)
 
 Requires production infrastructure. Planned scripts ([roadmap.md](roadmap.md)):

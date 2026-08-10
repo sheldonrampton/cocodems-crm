@@ -160,6 +160,18 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 bash scripts/upgrade-civicrm.sh
 ```
 
+## Sync staging CiviCRM data → local (WordPress unchanged)
+
+Pull **only** CiviCRM tables (contacts and other Civi data objects) from a staging DB backup. Local WordPress posts, options, users, plugins, and theme files stay as they are.
+
+```bash
+bash scripts/sync-staging-civicrm-to-local.sh
+# or a specific dump:
+bash scripts/sync-staging-civicrm-to-local.sh --from s3://BUCKET/cocodems/db/daily/cocodems-YYYYMMDD-HHMMSS.sql.gz --yes
+```
+
+Same prerequisites as the full-DB sync below (`BACKUP_S3_BUCKET`, local `.env`, AWS read access). Replaces `civicrm_*` / `log_civicrm_*` / `snap_civicrm_*` tables, clears `civicrm_uf_match` (re-links on login), and runs `fix-civicrm-urls.sh`. Does **not** change `wp_*` tables or copy plugins/extensions from staging.
+
 ## Sync staging database → local
 
 Use a staging backup so you can experiment locally (third-party CiviCRM extensions, WordPress plugins, custom code) without touching staging data.

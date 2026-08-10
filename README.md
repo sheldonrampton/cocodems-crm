@@ -22,6 +22,9 @@ To refresh your **local** database from the latest staging backup (experiment wi
 ```bash
 # Requires BACKUP_S3_BUCKET in .env and AWS CLI read access to the bucket
 bash scripts/sync-staging-to-local.sh
+
+# CiviCRM tables only — keeps local WordPress content/users/options
+bash scripts/sync-staging-civicrm-to-local.sh
 ```
 
 ## Continuous integration
@@ -177,7 +180,8 @@ cocodems-crm/
 │   ├── restore-db.sh              # Restore from local file or s3://
 │   ├── cron-backup-db.sh          # Cron entrypoint (docker group wrapper)
 │   ├── setup-staging-backup-cron.sh
-│   ├── sync-staging-to-local.sh   # Pull staging DB into local Docker
+│   ├── sync-staging-to-local.sh   # Pull full staging DB into local Docker
+│   ├── sync-staging-civicrm-to-local.sh  # CiviCRM tables only (keep WP)
 │   ├── backup-staging-files.sh    # Pack staging plugins/ext → S3
 │   └── rebuild-local-from-staging.sh  # Wipe local volumes; match staging
 │
