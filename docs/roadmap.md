@@ -38,9 +38,9 @@ Staging is deployed early (Phase 1) so the Communications Committee can review a
 | P1 | Database backup/restore | `backup-db.sh`, `restore-db.sh`, and scheduled S3 backups — see [deployment.md](deployment.md#database-backup-and-restore) |
 | P2 | Staging → local sync | `sync-staging-to-local.sh` and `rebuild-local-from-staging.sh` — see [docker/README.md](../docker/README.md#blow-away-and-rebuild-local-from-staging) |
 | P3 | Staging → local CiviCRM sync | `sync-staging-civicrm-to-local.sh` — see [docker/README.md](../docker/README.md#sync-staging-civicrm-data--local-wordpress-unchanged) |
-| P4 | Local → Staging Wordpress | A script exists to sync Wordpress content, plugins, theming and configuration from the local site to the staging site while leaving CiviCRM contacts and other data objects |
+| P4 | Local → Staging Wordpress | `sync-local-wordpress-to-staging.sh` — see [docker/README.md](../docker/README.md#sync-local-wordpress--staging-civicrm-unchanged) |
 
-Phase 1 staging infrastructure is **complete** for the P0/P1/P2/P3 rows above. Cross-environment sync **involving production** is deferred until production exists ([Phase 6](#phase-6--production-launch)).
+Phase 1 staging infrastructure is **complete** for the P0–P4 rows above. Cross-environment sync **involving production** is deferred until production exists ([Phase 6](#phase-6--production-launch)).
 
 ---
 

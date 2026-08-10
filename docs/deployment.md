@@ -472,6 +472,15 @@ bash scripts/sync-staging-civicrm-to-local.sh
 
 See [docker/README.md](../docker/README.md#sync-staging-civicrm-data--local-wordpress-unchanged).
 
+**Local WordPress → staging** (keep staging CiviCRM data):
+
+```bash
+# Laptop: BACKUP_S3_BUCKET, STAGING_EC2_INSTANCE_ID, AWS_REGION in .env
+bash scripts/sync-local-wordpress-to-staging.sh --yes
+```
+
+See [docker/README.md](../docker/README.md#sync-local-wordpress--staging-civicrm-unchanged).
+
 ## Cross-environment sync involving production (planned — Phase 6)
 
 Requires production infrastructure. Planned scripts ([roadmap.md](roadmap.md)):

@@ -172,6 +172,27 @@ bash scripts/sync-staging-civicrm-to-local.sh --from s3://BUCKET/cocodems/db/dai
 
 Same prerequisites as the full-DB sync below (`BACKUP_S3_BUCKET`, local `.env`, AWS read access). Replaces `civicrm_*` / `log_civicrm_*` / `snap_civicrm_*` tables, clears `civicrm_uf_match` (re-links on login), and runs `fix-civicrm-urls.sh`. Does **not** change `wp_*` tables or copy plugins/extensions from staging.
 
+## Sync local WordPress → staging (CiviCRM unchanged)
+
+Push **WordPress** posts, options, users, plugins, and themes from this laptop’s Docker site to staging **without** replacing CiviCRM contacts or other CiviCRM tables.
+
+1. Local stack running; `.env` is local-style (no `SITE_DOMAIN`).
+2. Set `BACKUP_S3_BUCKET`, `STAGING_EC2_INSTANCE_ID`, and `AWS_REGION` (see `.env.example`).
+3. Optional: `STAGING_SITE_URL=https://…` for nicer log messages.
+4. AWS credentials that can write the backup bucket and run SSM on the instance.
+
+```bash
+bash scripts/sync-local-wordpress-to-staging.sh --yes
+```
+
+This packages `wp_*` tables plus `plugins/` (except `civicrm`) and `themes/`, uploads to `s3://…/cocodems/sync/local-wp/<timestamp>/`, and runs `apply-local-wordpress-on-staging.sh` on the instance via SSM. Staging `civicrm_*` tables and `uploads/civicrm` are left alone; `civicrm_uf_match` is cleared so users re-link.
+
+**Notes**
+
+* Staging WordPress logins become whatever was on local (including `admin` / `CIVICRM_ADMIN_PASS` if that user was in the dump).
+* Does not push `uploads/` media or the CiviCRM plugin tree — keep those on staging or deploy CiviCRM via the staging upgrade path.
+* Confirm on staging: contact counts should be unchanged after the run.
+
 ## Sync staging database → local
 
 Use a staging backup so you can experiment locally (third-party CiviCRM extensions, WordPress plugins, custom code) without touching staging data.
