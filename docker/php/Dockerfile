@@ -1,5 +1,9 @@
 # WordPress + CiviCRM PHP-FPM image for local development.
 # Based on patterns from https://github.com/civicrm/civicrm-docker
+#
+# PHP security: rebuild with `docker compose build --pull --no-cache php` after
+# PHP advisories. CVE-2026-109618 / CVE-2026-109619 (CISA KEV, “php2shell”)
+# require PHP >= 8.4.27 (also fixed in 8.5.12 / 8.3.36 / 8.2.35).
 
 ARG WORDPRESS_VERSION=
 ARG CIVICRM_VERSION=6.16.0

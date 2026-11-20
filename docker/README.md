@@ -151,6 +151,22 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 
 Set `HTTP_PORT` in `.env` (e.g. `8081`) and set `CIVICRM_UF_BASEURL=http://localhost:8081` to match. If the stack was already installed, run `down -v` and reinstall, or update WordPress URLs manually (see Configuration above).
 
+**Patch PHP (security releases)**
+
+The PHP image is based on `wordpress:php8.4-fpm`. After PHP advisories (e.g. CVE-2026-109618 / CVE-2026-109619 requiring ≥ 8.4.27), rebuild with a fresh base image:
+
+```bash
+# Local
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml \
+  build --pull --no-cache php
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml \
+  up -d --force-recreate php
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml \
+  exec -T php php -r 'echo PHP_VERSION, PHP_EOL;'
+```
+
+On staging, take a DB backup first, then the same `build --pull --no-cache php` / `up -d --force-recreate php` against `docker-compose.staging.yml` (via SSM or on the host).
+
 **Upgrade CiviCRM**
 
 Default version is **6.16.0** (`CIVICRM_VERSION` in `docker/php/Dockerfile`). After changing the version:
