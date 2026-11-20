@@ -22,7 +22,7 @@ services:
     build:
       context: ./docker/php
       args:
-        CIVICRM_VERSION: ${CIVICRM_VERSION:-6.16.0}
+        CIVICRM_VERSION: ${CIVICRM_VERSION:-6.20.1}
         WORDPRESS_VERSION: ${WORDPRESS_VERSION:-}
     container_name: cocodems-php
     volumes:

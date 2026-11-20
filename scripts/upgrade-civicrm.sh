@@ -17,11 +17,13 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${REPO_ROOT}"
 
+LOCAL_COMPOSE=0
 if [[ -f "${REPO_ROOT}/docker/docker-compose.staging.yml" ]] \
 	&& grep -q '^SITE_DOMAIN=' "${REPO_ROOT}/.env" 2>/dev/null; then
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.staging.yml"
 else
 	COMPOSE="docker compose --project-directory ${REPO_ROOT} -f docker/docker-compose.yml -f docker/docker-compose.local.yml"
+	LOCAL_COMPOSE=1
 fi
 
 # cv stores upgrade state under XDG_STATE_HOME (www-data cannot write /var/www/.cv).
@@ -51,6 +53,13 @@ ${COMPOSE} "${CV_EXEC[@]}" php cv upgrade:db
 
 echo "==> Flushing CiviCRM caches..."
 ${COMPOSE} "${CV_EXEC[@]}" php cv flush
+
+# local-baseurl-proxy shares PHP's network namespace. Recreating PHP leaves it
+# attached to the old container, which breaks System Status clean-URL checks.
+if [[ "${LOCAL_COMPOSE}" -eq 1 ]]; then
+	echo "==> Recreating local-baseurl-proxy onto current PHP network..."
+	${COMPOSE} up -d --force-recreate --no-deps local-baseurl-proxy
+fi
 
 echo ""
 echo "CiviCRM upgrade complete."

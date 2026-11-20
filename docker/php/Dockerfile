@@ -6,7 +6,7 @@
 # require PHP >= 8.4.27 (also fixed in 8.5.12 / 8.3.36 / 8.2.35).
 
 ARG WORDPRESS_VERSION=
-ARG CIVICRM_VERSION=6.16.0
+ARG CIVICRM_VERSION=6.20.1
 
 FROM wordpress:php8.4-fpm AS build
 

@@ -194,7 +194,7 @@ if [[ ${SKIP_FILES} -eq 0 ]] || [[ -z "${WP_VERSION}" || -z "${CIVI_VERSION}" ]]
 	fi
 fi
 
-CIVI_VERSION="${CIVI_VERSION:-6.16.0}"
+CIVI_VERSION="${CIVI_VERSION:-6.20.1}"
 if [[ -z "${WP_VERSION}" ]]; then
 	echo "Set WORDPRESS_VERSION in .env (e.g. 7.0.1) or create an S3 versions.json from staging." >&2
 	exit 1

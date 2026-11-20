@@ -227,7 +227,7 @@ sudo -u ubuntu bash scripts/deploy-staging.sh
 
 ## CiviCRM version upgrades
 
-The CiviCRM version is set in `docker/php/Dockerfile` (default **6.16.0**). Rebuilding the PHP image does not replace the plugin in the existing Docker volume — run the upgrade script after deploy:
+The CiviCRM version is set in `docker/php/Dockerfile` (default **6.20.1**). Rebuilding the PHP image does not replace the plugin in the existing Docker volume — run the upgrade script after deploy:
 
 ```bash
 cd /opt/cocodems-crm
@@ -236,7 +236,7 @@ sudo -u ubuntu bash scripts/deploy-staging.sh
 sudo -u ubuntu bash scripts/upgrade-civicrm.sh
 ```
 
-Verify in the CiviCRM UI footer or with `cv ev 'echo CRM_Utils_System::version();'` inside the PHP container. See [CiviCRM 6.16 release notes](https://civicrm.org/blog/dev-team/civicrm-616-release).
+Verify in the CiviCRM UI footer or with `cv ev 'echo CRM_Utils_System::version();'` inside the PHP container. See [CiviCRM 6.20.1 release notes](https://download.civicrm.org/release/6.20.1).
 
 If `cv upgrade:db` fails with `Permission denied` on `/var/www/.cv/upgrade`, pull the latest `upgrade-civicrm.sh` (uses `XDG_STATE_HOME`) or rebuild the PHP image.
 

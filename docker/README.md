@@ -102,11 +102,13 @@ docker compose --project-directory . -f docker/docker-compose.yml -f docker/dock
 
 **CiviCRM System Status: “Guzzle client error / Could not load a clean page”**
 
-CiviCRM probes `CIVICRM_UF_BASEURL` from inside the PHP container. Local compose includes a small `local-baseurl-proxy` service so `http://localhost:8080` resolves to Nginx. Recreate it if you see this after an upgrade:
+CiviCRM probes `CIVICRM_UF_BASEURL` from inside the PHP container. Local compose includes a small `local-baseurl-proxy` service so `http://localhost:8080` resolves to Nginx. That proxy shares PHP’s network namespace, so recreating the PHP container (for example during a CiviCRM upgrade) leaves it attached to the old container. Recreate the proxy:
 
 ```bash
-docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up -d
+docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up -d --force-recreate --no-deps local-baseurl-proxy
 ```
+
+`scripts/upgrade-civicrm.sh` does this automatically on local.
 
 **`/wp-admin` redirects to `http://localhost/wp-admin/` (missing port)**
 
@@ -169,7 +171,7 @@ On staging, take a DB backup first, then the same `build --pull --no-cache php` 
 
 **Upgrade CiviCRM**
 
-Default version is **6.16.0** (`CIVICRM_VERSION` in `docker/php/Dockerfile`). After changing the version:
+Default version is **6.20.1** (`CIVICRM_VERSION` in `docker/php/Dockerfile`). After changing the version:
 
 ```bash
 docker compose --project-directory . -f docker/docker-compose.yml -f docker/docker-compose.local.yml up -d --build
